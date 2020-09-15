@@ -1,0 +1,79 @@
+﻿@page "{id:int}"
+@model SimpleCloudStorage.Pages.HomePageModel
+@{
+    ViewData["Title"] = "HomePage";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>@Model.CurrentUser.Name's HomePage</h1>
+
+<div>
+    @foreach (var fso in Model.fullPathList)
+    {
+        <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a><i class="fas fa-angle-right"></i>
+    }
+</div>
+
+<form method="post">
+    <ul>
+        @foreach (var fso in Model.Children)
+        {
+            if (fso.IsFolder)
+            {
+                <li>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-folder"></i>
+                        <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a>
+                    </div>
+                
+                </li>
+            }
+            else
+            {
+                <li>
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-file"></i>
+                        @fso.Name Size: @(((Dictionary<string, string>)ViewData["FilesSizes"])[fso.Name])
+                        <button type="submit" class="btn" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                    </div>
+
+                    @*<i class="fas fa-file"></i>
+                    @fso.Name
+                    <button type="submit" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download" class="btn btn-info"><i class="fas fa-download"></i></button>*@
+                </li>
+            }
+        }
+    </ul>
+</form>
+
+<div class="row">
+    <div class="col-md-4">
+        <div>
+            <form method="post">
+                <label class="control-label">Folder Name:</label>
+                <input type="text" name="fsoName" class="form-control">
+                <input type="hidden" name="parentId" value="@Model.CurrentDir.Id">
+                <input asp-page-handler="CreateFolder" type="submit" value="Create Folder" class="btn btn-primary">
+            </form>
+        </div>
+        <div>
+            <form enctype="multipart/form-data" method="post">
+                <div class="form-group">
+                    <label class="control-label">Upload File</label>
+                    <input id="file" type="file" name="file"/>
+                    <input type="hidden" name="returnId" value="@Model.CurrentDir.Id">
+                </div>
+                <input asp-page-handler="Upload" class="btn btn-primary" type="submit" value="Upload" />
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@*@Html.ActionLink("Download", "DownloadFile")
+
+<div class="form-group">
+    <label class="control-label">Download File</label>
+    <button type="submit" asp-route-data="id.pdf" asp-page-handler="Download">Download</button>
+</div>*@
+
