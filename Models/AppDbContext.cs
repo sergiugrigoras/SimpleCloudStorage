@@ -17,7 +17,6 @@ namespace SimpleCloudStorage.Models
 
         public virtual DbSet<FileSystemObject> FileSystemObjects { get; set; }
         public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<File> Files { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -32,6 +31,8 @@ namespace SimpleCloudStorage.Models
             modelBuilder.Entity<FileSystemObject>(entity =>
             {
                 entity.HasIndex(e => e.ParentId);
+
+                entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.IsFolder).HasColumnName("isFolder");
 
@@ -49,13 +50,6 @@ namespace SimpleCloudStorage.Models
                 entity.HasOne(d => d.HomeDir)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.HomeDirId);
-            });
-
-            modelBuilder.Entity<File>(entity =>
-            {
-                entity.Property(e => e.FileName).IsRequired();
-
-                entity.Property(e => e.UploadDate).HasColumnType("datetime");
             });
 
 

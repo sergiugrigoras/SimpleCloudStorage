@@ -24,8 +24,8 @@
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-folder"></i>
                         <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a>
+                        <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
                     </div>
-                
                 </li>
             }
             else
@@ -33,18 +33,17 @@
                 <li>
                     <div class="alert alert-success" role="alert">
                         <i class="fas fa-file"></i>
-                        @fso.Name Size: @(((Dictionary<string, string>)ViewData["FilesSizes"])[fso.Name])
+                        @fso.Name <b>Size:</b> @fso.FileSize <b>Upload Date:</b> @fso.CreateDate
+                        @*@fso.Name <b>Size:</b> @(((Dictionary<string, string>)ViewData["FilesSizes"])[fso.Name]) <b>Upload Date:</b> @(((Dictionary<string, string>)ViewData["FilesUploadDates"])[fso.Name])*@
                         <button type="submit" class="btn" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                        <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
                     </div>
-
-                    @*<i class="fas fa-file"></i>
-                    @fso.Name
-                    <button type="submit" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download" class="btn btn-info"><i class="fas fa-download"></i></button>*@
                 </li>
             }
         }
     </ul>
 </form>
+
 
 <div class="row">
     <div class="col-md-4">
@@ -60,7 +59,7 @@
             <form enctype="multipart/form-data" method="post">
                 <div class="form-group">
                     <label class="control-label">Upload File</label>
-                    <input id="file" type="file" name="file"/>
+                    <input id="file" type="file" name="file" />
                     <input type="hidden" name="returnId" value="@Model.CurrentDir.Id">
                 </div>
                 <input asp-page-handler="Upload" class="btn btn-primary" type="submit" value="Upload" />
@@ -70,10 +69,27 @@
 </div>
 
 
-@*@Html.ActionLink("Download", "DownloadFile")
-
-<div class="form-group">
-    <label class="control-label">Download File</label>
-    <button type="submit" asp-route-data="id.pdf" asp-page-handler="Download">Download</button>
-</div>*@
-
+<!--Delete Confirmation Modal Dialog-->
+<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cancel">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="confirm-text"></h6>
+                    <input type="hidden" id="fso-id" name="fsoId" />
+                    <input type="hidden" id="return-id" name="returnId" value="@Model.CurrentDir.Id" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

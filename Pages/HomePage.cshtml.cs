@@ -42,9 +42,6 @@ namespace SimpleCloudStorage.Pages
         [BindProperty]
         public IEnumerable<FileSystemObject> Children { get; set; }
         
-        [BindProperty]
-        public IDictionary<string, string> FilesSizes { get; set; }
-
         public async Task<IActionResult> OnGetAsync(int id)
         {
             CurrentDir = await _context.FileSystemObjects.FindAsync(id);
@@ -85,7 +82,10 @@ namespace SimpleCloudStorage.Pages
                        orderby dir.IsFolder descending, dir.Name ascending
                        select dir;
 
-            FilesSizes = new Dictionary<string, string>();
+
+            
+            /*IDictionary<string, string> FilesUploadDates = new Dictionary<string, string>();
+            IDictionary<string, string> FilesSizes = new Dictionary<string, string>();
             foreach (var c in Children)
             {
                 if (!c.IsFolder)
@@ -93,10 +93,14 @@ namespace SimpleCloudStorage.Pages
                     Models.File f = await _context.Files.FirstOrDefaultAsync(f => f.FsoId == c.Id);
                     var fName = c.Name;
                     var fSize = f.FileSize;
+                    var fDate = f.UploadDate;
+                    
                     FilesSizes.Add(c.Name, BytesToString(fSize));
+                    FilesUploadDates.Add(c.Name, f.UploadDate.ToString("MM/dd/yyyy h:mm tt"));
                 }
             }
             ViewData["FilesSizes"] = FilesSizes;
+            ViewData["FilesUploadDates"] = FilesUploadDates;*/
             return Page();
         }
 
@@ -120,11 +124,11 @@ namespace SimpleCloudStorage.Pages
 
         public async Task<IActionResult> OnPostUploadAsync(int returnId, IFormFile file)
         {
-            if (file!=null)
+            if (file != null)
             {
                 string filePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\";
-                var fileName = Path.GetFileName(file.FileName);
-                var hashFileName = genHashFileName(fileName);
+                var uploadFileName = Path.GetFileName(file.FileName);
+                var hashFileName = genHashFileName(uploadFileName);
                 var fileSize = file.Length;
 
                 using (var stream = System.IO.File.Create(filePath + hashFileName))
@@ -133,18 +137,13 @@ namespace SimpleCloudStorage.Pages
                 }
 
                 FileSystemObject newFso = new FileSystemObject();
-                newFso.Name = fileName;
+                newFso.Name = uploadFileName;
                 newFso.ParentId = returnId;
                 newFso.IsFolder = false;
+                newFso.FileName = hashFileName;
+                newFso.FileSize = file.Length;
+                newFso.CreateDate = DateTime.Now;
                 _context.FileSystemObjects.Add(newFso);
-                await _context.SaveChangesAsync();
-
-                Models.File newFile = new Models.File();
-                newFile.FsoId = newFso.Id;
-                newFile.Fso = newFso;
-                newFile.FileName = hashFileName;
-                newFile.FileSize = fileSize;
-                _context.Files.Add(newFile);
                 await _context.SaveChangesAsync();
             }
             return RedirectToPage("./HomePage", new { id = returnId });
@@ -153,10 +152,10 @@ namespace SimpleCloudStorage.Pages
         public async Task<ActionResult> OnPostDownloadAsync(int id, string name)
         {
             string filePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\";
-            var hashFileName = _context.Files.FirstOrDefault(f=> f.FsoId == id).FileName;
+            var hashFileName = _context.FileSystemObjects.FirstOrDefault(f => f.Id == id).FileName;
 
             var memory = new MemoryStream();
-            using (var stream = new FileStream(filePath+hashFileName, FileMode.Open))
+            using (var stream = new FileStream(filePath + hashFileName, FileMode.Open))
             {
                 await stream.CopyToAsync(memory);
             }
@@ -164,6 +163,59 @@ namespace SimpleCloudStorage.Pages
 
             return File(memory, "application/octet-stream", name);
         }
+
+        public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int returnId)
+        {
+            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == fsoId);
+            if (!fso.IsFolder)
+            {
+                var fullFilePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\" + fso.FileName;
+                _context.FileSystemObjects.Remove(fso);
+                await _context.SaveChangesAsync();
+
+                if (System.IO.File.Exists(fullFilePath))
+                {
+                    try
+                    {
+                        System.IO.File.Delete(fullFilePath);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+            }
+            return RedirectToPage("./HomePage", new { id = returnId });
+
+        }
+
+        /*public async Task<int> DeleteFsoAsync(int id)
+        {
+            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
+            _context.FileSystemObjects.Remove(fso);
+            await _context.SaveChangesAsync();
+
+            return 1;
+        }
+
+        public async Task<int> DeleteFileAsync(int id)
+        {
+            var file = await _context.Files.FirstOrDefaultAsync(f => f.FsoId == id);
+            var fullFilePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\" + file.FileName;
+            _context.Files.Remove(file);
+            await DeleteFsoAsync(id);
+            if (System.IO.File.Exists(fullFilePath))
+            {
+                try
+                {
+                    System.IO.File.Delete(fullFilePath);
+                }
+                catch (Exception ex)
+                {
+                    return 0;
+                }
+            }
+            return 1;
+        }*/
 
         public string genHashFileName(string fileName)
         {
@@ -181,7 +233,7 @@ namespace SimpleCloudStorage.Pages
         }
         public string BytesToString(long byteCount)
         {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
             if (byteCount == 0)
                 return "0" + suf[0];
             long bytes = Math.Abs(byteCount);
@@ -191,18 +243,3 @@ namespace SimpleCloudStorage.Pages
         }
     }
 }
-
-//return File(fs, System.Web.MimeMapping.GetMimeMapping(fileName), fileName);
-//"application/octet-stream"
-
-/*
-var path = _webroot.WebRootPath + "\\storage\\id.pdf";
-var memory = new MemoryStream();
-
-            using (var stream = new FileStream(path, FileMode.Open))
-            {
-                await stream.CopyToAsync(memory);
-            }
-            memory.Position = 0;
-
-            return File(memory, "application/octet-stream", name);*/
