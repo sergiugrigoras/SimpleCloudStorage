@@ -75,9 +75,9 @@ namespace SimpleCloudStorage.Pages
                 return RedirectToPage("./HomePage", new { id = CurrentUser.HomeDirId });
             }
 
-            List<FileSystemObject> Directories = await _context.FileSystemObjects.ToListAsync();
+            List<FileSystemObject> FsoList = await _context.FileSystemObjects.ToListAsync();
 
-            Children = from dir in Directories
+            Children = from dir in FsoList
                        where dir.ParentId == CurrentDir.Id
                        orderby dir.IsFolder descending, dir.Name ascending
                        select dir;
@@ -106,20 +106,25 @@ namespace SimpleCloudStorage.Pages
 
         public async Task<IActionResult> OnPostCreateFolderAsync(int parentId, string fsoName)
         {
-            FileSystemObject NewFso = new FileSystemObject();
-            NewFso.Name = fsoName;
-            NewFso.ParentId = parentId;
-            NewFso.IsFolder = true;
-            
-            if (!ModelState.IsValid)
+            if (fsoName != null) 
             {
-                return Page();
-            }
+                FileSystemObject NewFso = new FileSystemObject();
+                NewFso.Name = fsoName;
+                NewFso.ParentId = parentId;
+                NewFso.IsFolder = true;
 
-            _context.FileSystemObjects.Add(NewFso);
-            await _context.SaveChangesAsync();
+                if (!ModelState.IsValid)
+                {
+                    return Page();
+                }
+
+                _context.FileSystemObjects.Add(NewFso);
+                await _context.SaveChangesAsync();
+                return RedirectToPage("HomePage", new { id = NewFso.Id });
+            }
+            
                        
-            return RedirectToPage("HomePage", new { id = NewFso.Id });
+            return RedirectToPage("HomePage", new { id = parentId });
         }
 
         public async Task<IActionResult> OnPostUploadAsync(int returnId, IFormFile file)
@@ -166,56 +171,50 @@ namespace SimpleCloudStorage.Pages
 
         public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int returnId)
         {
-            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == fsoId);
+            await deleteFsoAsync(fsoId);
+            return RedirectToPage("./HomePage", new { id = returnId });
+
+        }
+
+        private async Task deleteFsoAsync(int id)
+        {
+            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
             if (!fso.IsFolder)
             {
                 var fullFilePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\" + fso.FileName;
                 _context.FileSystemObjects.Remove(fso);
                 await _context.SaveChangesAsync();
-
-                if (System.IO.File.Exists(fullFilePath))
-                {
-                    try
-                    {
-                        System.IO.File.Delete(fullFilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                    }
-                }
+                deleteFile(fullFilePath);
             }
-            return RedirectToPage("./HomePage", new { id = returnId });
-
+            else
+            {
+                List<FileSystemObject> fsoList = await _context.FileSystemObjects.ToListAsync();
+                IEnumerable<FileSystemObject> subDirList = new List<FileSystemObject>();
+                subDirList = from dir in fsoList
+                           where dir.ParentId == id
+                           select dir;
+                foreach (var f in subDirList)
+                {
+                    await deleteFsoAsync(f.Id);
+                }
+                _context.FileSystemObjects.Remove(fso);
+                await _context.SaveChangesAsync();
+            }
         }
 
-        /*public async Task<int> DeleteFsoAsync(int id)
+        private void deleteFile(string fullPath)
         {
-            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
-            _context.FileSystemObjects.Remove(fso);
-            await _context.SaveChangesAsync();
-
-            return 1;
-        }
-
-        public async Task<int> DeleteFileAsync(int id)
-        {
-            var file = await _context.Files.FirstOrDefaultAsync(f => f.FsoId == id);
-            var fullFilePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\" + file.FileName;
-            _context.Files.Remove(file);
-            await DeleteFsoAsync(id);
-            if (System.IO.File.Exists(fullFilePath))
+            if (System.IO.File.Exists(fullPath))
             {
                 try
                 {
-                    System.IO.File.Delete(fullFilePath);
+                    System.IO.File.Delete(fullPath);
                 }
                 catch (Exception ex)
                 {
-                    return 0;
                 }
             }
-            return 1;
-        }*/
+        }
 
         public string genHashFileName(string fileName)
         {
@@ -231,7 +230,7 @@ namespace SimpleCloudStorage.Pages
             }
             return sb.ToString();
         }
-        public string BytesToString(long byteCount)
+        public string bytesToString(long byteCount)
         {
             string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
             if (byteCount == 0)
