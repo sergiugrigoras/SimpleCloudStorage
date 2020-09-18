@@ -1,0 +1,15 @@
+﻿@page
+@model SimpleCloudStorage.Pages.SearchModel
+@{
+    ViewData["Title"] = "Search";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Search</h1>
+
+<ul>
+    @foreach (var fso in Model.SearchResults)
+    { 
+    <li>Id: @fso.Id Name: @fso.Name</li>
+    }
+</ul>

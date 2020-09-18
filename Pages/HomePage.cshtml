@@ -14,35 +14,44 @@
     }
 </div>
 
-<form method="post">
-    <ul>
-        @foreach (var fso in Model.Children)
-        {
-            if (fso.IsFolder)
-            {
+<div class="row">
+    <div class="col-md-8">
+        <form method="post">
+            <ul>
                 <li>
-                    <div class="alert alert-warning" role="alert">
-                        <i class="fas fa-folder"></i>
-                        <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a>
-                        <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    <input type="text" class="form-control" placeholder="Search" name="keyword"/>
+                    <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
+                    <input asp-page="Search" type="submit" value="Search" class="btn btn-primary">
                 </li>
-            }
-            else
-            {
-                <li>
-                    <div class="alert alert-success" role="alert">
-                        <i class="fas fa-file"></i>
-                        @fso.Name <b>Size:</b> @fso.FileSize <b>Upload Date:</b> @fso.CreateDate
-                        @*@fso.Name <b>Size:</b> @(((Dictionary<string, string>)ViewData["FilesSizes"])[fso.Name]) <b>Upload Date:</b> @(((Dictionary<string, string>)ViewData["FilesUploadDates"])[fso.Name])*@
-                        <button type="submit" class="btn" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-                        <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                </li>
-            }
-        }
-    </ul>
-</form>
+                @foreach (var fso in Model.Children)
+                {
+                    if (fso.IsFolder)
+                    {
+                        <li>
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-folder"></i>
+                                <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a>
+                                <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-file"></i>
+                                @fso.Name <b>Size:</b> @fso.FileSize <b>Upload Date:</b> @fso.CreateDate
+                                @*@fso.Name <b>Size:</b> @(((Dictionary<string, string>)ViewData["FilesSizes"])[fso.Name]) <b>Upload Date:</b> @(((Dictionary<string, string>)ViewData["FilesUploadDates"])[fso.Name])*@
+                                <button type="submit" class="btn" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                                <button type="button" class="btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </li>
+                    }
+                }
+            </ul>
+        </form>
+    </div>
+</div>
 
 
 <div class="row">
