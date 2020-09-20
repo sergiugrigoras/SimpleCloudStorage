@@ -7,9 +7,36 @@
 
 <h1>Search</h1>
 
-<ul>
-    @foreach (var fso in Model.SearchResults)
-    { 
-    <li>Id: @fso.Id Name: @fso.Name</li>
-    }
-</ul>
+
+
+<form method="post">
+    <ul>
+        @foreach (var fso in Model.SearchResults)
+        {
+            if (fso.IsFolder)
+            {
+                <li>
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-folder"></i>
+                        <a asp-page="Homepage" asp-route-id="@fso.Id" class="folder-link">@fso.Name</a>
+                    </div>
+                </li>
+            }
+            else
+            {
+                <li>
+                    <div class="alert alert-success" role="alert">
+                        <i class="fas fa-file"></i> 
+                        <a asp-page="Homepage" asp-route-id="@fso.ParentId" class="file-link">
+                            @fso.Name <b>Size:</b> @fso.FileSize <b>Upload Date:</b> @fso.CreateDate
+                        </a>
+                        <button type="submit" class="btn" asp-page="HomePage" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                    </div>
+                </li>
+            }
+        }
+    </ul>
+</form>
+
+<a class="btn btn-primary" asp-page="Homepage" asp-route-id="@Model.CurrentDir.Id">Back to Folder</a>
+

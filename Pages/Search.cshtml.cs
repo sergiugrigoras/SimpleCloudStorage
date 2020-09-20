@@ -24,6 +24,9 @@ namespace SimpleCloudStorage.Pages
         
         [BindProperty]
         public List<FileSystemObject> SearchScope { get; set; }
+        
+        [BindProperty]
+        public FileSystemObject CurrentDir { get; set; }
 
         public SearchModel(AppDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment webroot)
         {
@@ -42,7 +45,7 @@ namespace SimpleCloudStorage.Pages
         {
             /*SearchKeyword = keyword;
             DirId = dirId;*/
-
+            CurrentDir = await _context.FileSystemObjects.FindAsync(dirId);
 
             if (keyword != null)
             {
@@ -81,6 +84,7 @@ namespace SimpleCloudStorage.Pages
         {
             SearchResults = from f in SearchScope
                             where f.Name.ToUpper().Contains(kWord.ToUpper())
+                            orderby f.IsFolder descending, f.Name ascending
                             select f;
         }
     }

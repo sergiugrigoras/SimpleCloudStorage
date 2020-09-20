@@ -17,6 +17,7 @@ namespace SimpleCloudStorage.Models
 
         public virtual DbSet<FileSystemObject> FileSystemObjects { get; set; }
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Share> Shares { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -50,6 +51,13 @@ namespace SimpleCloudStorage.Models
                 entity.HasOne(d => d.HomeDir)
                     .WithMany(p => p.Users)
                     .HasForeignKey(d => d.HomeDirId);
+            });
+
+            modelBuilder.Entity<Share>(entity =>
+            {
+                entity.HasKey(e => new { e.FromUserId, e.ToUserId, e.FsoId });
+
+                entity.Property(e => e.SharedDate).HasColumnType("datetime");
             });
 
 

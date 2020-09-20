@@ -120,7 +120,7 @@ namespace SimpleCloudStorage.Pages
 
                 _context.FileSystemObjects.Add(NewFso);
                 await _context.SaveChangesAsync();
-                return RedirectToPage("HomePage", new { id = NewFso.Id });
+                return RedirectToPage("HomePage", new { id = parentId });
             }
             
                        

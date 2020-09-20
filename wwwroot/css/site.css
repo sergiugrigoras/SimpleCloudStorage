@@ -69,18 +69,3 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
-
-.btn {
-    /*background-color: DodgerBlue;*/ /* Blue background */
-    /*border: none;*/ /* Remove borders */
-    /*color: white;*/ /* White text */
-    /*padding: 12px 16px;*/ /* Some padding */
-    /*font-size: 16px;*/ /* Set a font size */
-    cursor: pointer; /* Mouse pointer on hover */
-}
-
-    /* Darker background on mouse-over */
-/*    .btn:hover {
-        background-color: RoyalBlue;
-    }*/
-
