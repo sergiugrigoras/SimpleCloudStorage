@@ -7,4 +7,22 @@
 
 <h1>Share</h1>
 
-@Model.Data
+<form method="post">
+    <div class="row">
+        <div class="col-md-8">
+            @foreach (var s in Model.SharedToUserList)
+            {
+                <div class="fso fso-file">
+                    <div class="fso-icon"><i class="fas fa-file"></i></div>
+                    <div class="fso-info">
+                        <span>@s.Fso.Name&nbsp;&nbsp;<b>Size:&nbsp;</b></span>
+                        <span class="file-size">@s.Fso.FileSize</span>
+                    </div>
+                    <div class="fso-actions">
+                        <button type="submit" class="fso-action-btn" asp-route-fsoId="@s.FsoId" asp-route-fileName="@s.Fso.Name" asp-route-fromUserId="@s.FromUserId" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                    </div>
+                </div>
+            }
+            </div>
+    </div>
+</form>

@@ -22,7 +22,15 @@
                 <span asp-validation-for="HomeDirName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-danger">
+                @if (Model.UserExists)
+                {
+                    <input type="submit" value="Update" class="btn btn-warning">
+                }
+                else
+                {
+                    <input type="submit" value="Create" class="btn btn-success">
+                }
+
             </div>
         </form>
     </div>

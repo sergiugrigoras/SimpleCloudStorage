@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SimpleCloudStorage.Models;
 
 namespace SimpleCloudStorage.Pages
@@ -17,8 +18,8 @@ namespace SimpleCloudStorage.Pages
     {
         private readonly AppDbContext _context;
         private UserManager<IdentityUser> _userManager;
-        private IWebHostEnvironment _webroot;
-        
+        private string _storageLocation;
+
         [BindProperty]
         public IEnumerable<FileSystemObject> SearchResults { get; set; }
         
@@ -28,11 +29,11 @@ namespace SimpleCloudStorage.Pages
         [BindProperty]
         public FileSystemObject CurrentDir { get; set; }
 
-        public SearchModel(AppDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment webroot)
+        public SearchModel(AppDbContext context, UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
-            _webroot = webroot;
+            _storageLocation = configuration["StorageLocation"];
             SearchResults = new List<FileSystemObject>();
             SearchScope = new List<FileSystemObject>();
         }

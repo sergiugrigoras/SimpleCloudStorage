@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using SimpleCloudStorage.Models;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace SimpleCloudStorage
 {
@@ -37,6 +39,18 @@ namespace SimpleCloudStorage
                 .AddDefaultTokenProviders();
 
             services.AddRazorPages().AddRazorRuntimeCompilation();
+
+            services.Configure<FormOptions>(x =>
+            {
+                x.ValueLengthLimit = 5000; // Limit on individual form values
+                x.MultipartBodyLengthLimit = 737280000; // Limit on form body size
+                x.MultipartHeadersLengthLimit = 737280000; // Limit on form header size
+            });
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = 837280000; // Limit on request body size
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,11 +67,17 @@ namespace SimpleCloudStorage
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
 
-            app.UseHttpsRedirection();
+            /*app.UseHttpsRedirection();*/
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            
 
             app.UseAuthentication();
             app.UseAuthorization();

@@ -21,14 +21,5 @@ namespace SimpleCloudStorage.Models
         {
             base.OnModelCreating(builder);
         }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=SimpleCloudStorageDB;Trusted_Connection=True;");
-            }
-        }
-
     }
 }

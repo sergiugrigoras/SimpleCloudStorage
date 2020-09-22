@@ -18,14 +18,8 @@ namespace SimpleCloudStorage.Models
         public virtual DbSet<FileSystemObject> FileSystemObjects { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Share> Shares { get; set; }
+        public virtual DbSet<PublicFile> PublicFiles { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Server=.\\SQLExpress;Database=SimpleCloudStorageDB;Trusted_Connection=True;");
-            }
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +54,14 @@ namespace SimpleCloudStorage.Models
                 entity.Property(e => e.SharedDate).HasColumnType("datetime");
             });
 
+            modelBuilder.Entity<PublicFile>(entity =>
+            {
+                entity.HasKey(e => new { e.FromUserId, e.FsoId });
+
+                entity.Property(e => e.PublicId).IsRequired();
+
+                entity.Property(e => e.SharedDate).HasColumnType("datetime");
+            });
 
             OnModelCreatingPartial(modelBuilder);
         }

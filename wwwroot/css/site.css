@@ -69,3 +69,174 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
+
+/*My css classes*/
+.path-bar {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.path-bar-folder {
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    background-color: #fff3cd;
+    border-color: #856404;
+    margin: 0.2rem 0rem;
+}
+
+    .path-bar-folder a {
+        color: black;
+        text-decoration: none;
+        margin: 0.2rem 1rem;
+    }
+
+.path-bar-icon {
+    margin: 0.2rem 0.3rem;
+}
+
+
+.search-box {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    margin: 0.2rem 0rem;
+    padding: 0.5rem;
+    display: flex;
+}
+
+    .search-box input[type=text] {
+        flex-grow: 2;
+        border: none;
+        width: 100%;
+    }
+
+        .search-box input[type=text]:focus {
+            outline: none;
+        }
+
+    .search-box button {
+        border: none;
+        background: transparent;
+        padding: 0rem 1rem;
+    }
+
+        .search-box button:focus {
+            outline: none;
+            transform: scale(0.9);
+        }
+
+
+.create-folder-box {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    margin: 0.2rem 0rem;
+    padding: 0.5rem;
+    display: flex;
+}
+
+    .create-folder-box input[type=text] {
+        flex-grow: 2;
+        border: none;
+        border: none;
+        width: 100%;
+    }
+
+        .create-folder-box input[type=text]:focus {
+            outline: none;
+        }
+
+    .create-folder-box button {
+        border: none;
+        background: transparent;
+        padding: 0rem 1rem;
+    }
+
+        .create-folder-box button:focus {
+            outline: none;
+            transform: scale(0.9);
+        }
+
+.upload-file-box {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    margin: 0.2rem 0rem;
+    padding: 0.5rem;
+    display: flex;
+}
+
+    .upload-file-box input[type=file] {
+        flex-grow: 2;
+        border: none;
+        width: 100%;
+    }
+
+        .upload-file-box input[type=file]:focus {
+            outline: none;
+        }
+
+    .upload-file-box button {
+        border: none;
+        background: transparent;
+        padding: 0rem 1rem;
+    }
+
+        .upload-file-box button:focus {
+            outline: none;
+            transform: scale(0.9);
+        }
+
+.fso {
+    display: flex;
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 0.2rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+
+.fso-folder {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+
+.fso-file {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.fso-icon {
+    margin-right: 0.25rem;
+}
+
+.fso-info {
+    flex-grow: 2;
+}
+
+    .fso-info > a {
+        color: currentColor;
+        text-decoration: none;
+    }
+
+.fso-actions button {
+    display: inline-block;
+    border: none;
+    background: transparent;
+    color: currentcolor;
+    margin-left: 0.5rem;
+}
+
+    .fso-actions button:focus {
+        outline: none;
+    }
+
+    .fso-actions button:active {
+        transform: scale(0.9);
+    }
+
+@* .search-input:focus {
+    border-color: #FF0000;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(255, 0, 0, 0.6);
+}
+
+*@

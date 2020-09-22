@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using SimpleCloudStorage.Models;
 
 namespace SimpleCloudStorage.Pages
@@ -22,12 +23,14 @@ namespace SimpleCloudStorage.Pages
         private readonly AppDbContext _context;
         private UserManager<IdentityUser> _userManager;
         private IWebHostEnvironment _webroot;
+        private string _storageLocation;
 
-        public HomePageModel(AppDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment webroot)
+        public HomePageModel(AppDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment webroot, IConfiguration configuration)
         {
             _context = context;
             _userManager = userManager;
             _webroot = webroot;
+            _storageLocation = configuration["StorageLocation"];
         }
 
         [BindProperty]
@@ -44,6 +47,7 @@ namespace SimpleCloudStorage.Pages
         
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            
             CurrentDir = await _context.FileSystemObjects.FindAsync(id);
             if (CurrentDir == null)
             {
@@ -54,7 +58,7 @@ namespace SimpleCloudStorage.Pages
             //Creating storage folder on server
             if (CurrentUser != null)
             {
-                var folder = _webroot.WebRootPath + "\\storage\\" + CurrentUser.UserAccountId;
+                var folder = _storageLocation + CurrentUser.UserAccountId;
                 if (!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
@@ -79,59 +83,39 @@ namespace SimpleCloudStorage.Pages
 
             Children = from dir in FsoList
                        where dir.ParentId == CurrentDir.Id
-                       orderby dir.IsFolder descending, dir.Name ascending
+                       orderby dir.IsFolder descending, dir.CreateDate descending
                        select dir;
-
-
-            
-            /*IDictionary<string, string> FilesUploadDates = new Dictionary<string, string>();
-            IDictionary<string, string> FilesSizes = new Dictionary<string, string>();
-            foreach (var c in Children)
-            {
-                if (!c.IsFolder)
-                {
-                    Models.File f = await _context.Files.FirstOrDefaultAsync(f => f.FsoId == c.Id);
-                    var fName = c.Name;
-                    var fSize = f.FileSize;
-                    var fDate = f.UploadDate;
-                    
-                    FilesSizes.Add(c.Name, BytesToString(fSize));
-                    FilesUploadDates.Add(c.Name, f.UploadDate.ToString("MM/dd/yyyy h:mm tt"));
-                }
-            }
-            ViewData["FilesSizes"] = FilesSizes;
-            ViewData["FilesUploadDates"] = FilesUploadDates;*/
             return Page();
         }
 
-        public async Task<IActionResult> OnPostCreateFolderAsync(int parentId, string fsoName)
+        public async Task<IActionResult> OnPostCreateFolderAsync(int returnId, string fsoName)
         {
             if (fsoName != null) 
             {
-                FileSystemObject NewFso = new FileSystemObject();
-                NewFso.Name = fsoName;
-                NewFso.ParentId = parentId;
-                NewFso.IsFolder = true;
+                FileSystemObject newFso = new FileSystemObject();
+                newFso.Name = fsoName;
+                newFso.ParentId = returnId;
+                newFso.IsFolder = true;
+                newFso.CreateDate = DateTime.Now;
 
                 if (!ModelState.IsValid)
                 {
                     return Page();
                 }
-
-                _context.FileSystemObjects.Add(NewFso);
+                _context.FileSystemObjects.Add(newFso);
                 await _context.SaveChangesAsync();
-                return RedirectToPage("HomePage", new { id = parentId });
+                return RedirectToPage("HomePage", new { id = returnId });
             }
             
                        
-            return RedirectToPage("HomePage", new { id = parentId });
+            return RedirectToPage("HomePage", new { id = returnId });
         }
-
+        
         public async Task<IActionResult> OnPostUploadAsync(int returnId, IFormFile file)
         {
             if (file != null)
             {
-                string filePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\";
+                string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
                 var uploadFileName = Path.GetFileName(file.FileName);
                 var hashFileName = genHashFileName(uploadFileName);
                 var fileSize = file.Length;
@@ -153,10 +137,9 @@ namespace SimpleCloudStorage.Pages
             }
             return RedirectToPage("./HomePage", new { id = returnId });
         }
-
         public async Task<ActionResult> OnPostDownloadAsync(int id, string name)
         {
-            string filePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\";
+            string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
             var hashFileName = _context.FileSystemObjects.FirstOrDefault(f => f.Id == id).FileName;
 
             var memory = new MemoryStream();
@@ -165,7 +148,6 @@ namespace SimpleCloudStorage.Pages
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-
             return File(memory, "application/octet-stream", name);
         }
 
@@ -173,7 +155,6 @@ namespace SimpleCloudStorage.Pages
         {
             await deleteFsoAsync(fsoId);
             return RedirectToPage("./HomePage", new { id = returnId });
-
         }
 
         private async Task deleteFsoAsync(int id)
@@ -181,7 +162,7 @@ namespace SimpleCloudStorage.Pages
             var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
             if (!fso.IsFolder)
             {
-                var fullFilePath = _webroot.WebRootPath + "\\storage\\" + _userManager.GetUserId(User) + "\\" + fso.FileName;
+                var fullFilePath = _storageLocation + _userManager.GetUserId(User) + "/" + fso.FileName;
                 _context.FileSystemObjects.Remove(fso);
                 await _context.SaveChangesAsync();
                 deleteFile(fullFilePath);

@@ -56,9 +56,9 @@ namespace SimpleCloudStorage.Pages
             {
                 _userManager.AddToRoleAsync(newAspNetUser, AccountType).Wait();
                 _signInManager.SignInAsync(newAspNetUser, false).Wait();
-                //_signInManager.PasswordSignInAsync(Email, Password, true, false).Wait();
+                return RedirectToPage("CreateHomePage");
             }
-            return RedirectToPage("CreateHomePage");
+            return RedirectToPage("./Index");
         }
 
     }

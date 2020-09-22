@@ -39,7 +39,6 @@ namespace SimpleCloudStorage.Pages
                 {
                     return RedirectToPage("./CreateHomePage");
                 }
-                
             }
             else
             {
