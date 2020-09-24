@@ -35,24 +35,25 @@
                     if (fso.IsFolder)
                     {
                         <div class="fso fso-folder">
-                            <div class="fso-icon"><i class="fas fa-folder"></i></div>
-                            <div class="fso-info"><a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a></div>
-                            <div class="fso-actions"><button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button></div>
+                            <div>
+                                <i class="fas fa-folder"></i>
+                                <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
+                            </div>
+                            <button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     }
                     else
                     {
                         <div class="fso fso-file">
-                            <div class="fso-icon"><i class="fas fa-file"></i></div>
-                            <div class="fso-info">
-                                <span>@fso.Name&nbsp;&nbsp;<b>Size:&nbsp;</b></span>
+                            <div>
+                                <i class="fas fa-file"></i>
+                                <span>@fso.Name&nbsp;&nbsp;</span>
+                                <span><b>Size:&nbsp;</b></span>
                                 <span class="file-size">@fso.FileSize</span>
                             </div>
-                            <div class="fso-actions">
-                                <button type="submit" asp-route-id="@fso.Id" asp-route-name="@fso.Name" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-                                <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
-                                <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
-                            </div>
+                            <button type="submit" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                            <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
+                            <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
                         </div>
                     }
                 }

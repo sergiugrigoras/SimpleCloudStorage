@@ -137,10 +137,12 @@ namespace SimpleCloudStorage.Pages
             }
             return RedirectToPage("./HomePage", new { id = returnId });
         }
-        public async Task<ActionResult> OnPostDownloadAsync(int id, string name)
+        public async Task<ActionResult> OnPostDownloadAsync(int id)
         {
             string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
-            var hashFileName = _context.FileSystemObjects.FirstOrDefault(f => f.Id == id).FileName;
+            var fso = _context.FileSystemObjects.FirstOrDefault(f => f.Id == id);
+            var hashFileName = fso.FileName;
+            var downloadFileName = fso.Name;
 
             var memory = new MemoryStream();
             using (var stream = new FileStream(filePath + hashFileName, FileMode.Open))
@@ -148,7 +150,7 @@ namespace SimpleCloudStorage.Pages
                 await stream.CopyToAsync(memory);
             }
             memory.Position = 0;
-            return File(memory, "application/octet-stream", name);
+            return File(memory, "application/octet-stream", downloadFileName);
         }
 
         public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int returnId)
