@@ -44,7 +44,10 @@ namespace SimpleCloudStorage.Pages
 
         [BindProperty]
         public IEnumerable<FileSystemObject> Children { get; set; }
-        
+
+        [BindProperty]
+        public IList<string> Roles { get; set; }
+
         public async Task<IActionResult> OnGetAsync(int id)
         {
             
@@ -85,7 +88,14 @@ namespace SimpleCloudStorage.Pages
                        where dir.ParentId == CurrentDir.Id
                        orderby dir.IsFolder descending, dir.CreateDate descending
                        select dir;
+
+
+            // Resolve the user 
+            var user = await _userManager.GetUserAsync(User);
+            // Get the roles for the user
+            Roles = await _userManager.GetRolesAsync(user);
             return Page();
+
         }
 
         public async Task<IActionResult> OnPostCreateFolderAsync(int returnId, string fsoName)

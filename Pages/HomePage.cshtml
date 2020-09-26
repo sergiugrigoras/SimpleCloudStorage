@@ -5,7 +5,7 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-    <h1>@Model.CurrentUser.Name's HomePage&nbsp;<a asp-page="CreateHomePage"><i class="fas fa-edit"></i></a></h1>
+<h1>@Model.CurrentUser.Name's HomePage&nbsp;<a asp-page="CreateHomePage"><i class="fas fa-edit"></i></a></h1>
 
 
 <div class="row">
@@ -25,38 +25,42 @@
 <div class="row">
     <div class="col-md-8">
         <form method="post">
-                <div class="search-box">
-                    <input type="text" placeholder="Search" name="keyword" id="search1"/>
-                    <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
-                    <button asp-page="Search" type="submit"><i class="fas fa-search"></i></button>
-                </div>
-                @foreach (var fso in Model.Children)
+            <div class="search-box">
+                <input type="text" placeholder="Search" name="keyword" id="search1" />
+                <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
+                <button asp-page="Search" type="submit"><i class="fas fa-search"></i></button>
+            </div>
+            @foreach (var fso in Model.Children)
+            {
+                if (fso.IsFolder)
                 {
-                    if (fso.IsFolder)
-                    {
-                        <div class="fso fso-folder">
-                            <div>
-                                <i class="fas fa-folder"></i>
-                                <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
-                            </div>
-                            <button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
+                    <div class="fso fso-folder">
+                        <div>
+                            <i class="fas fa-folder"></i>
+                            <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="fso fso-file">
-                            <div>
-                                <i class="fas fa-file"></i>
-                                <span>@fso.Name&nbsp;&nbsp;</span>
-                                <span><b>Size:&nbsp;</b></span>
-                                <span class="file-size">@fso.FileSize</span>
-                            </div>
-                            <button type="submit" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-                            <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
-                            <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
-                        </div>
-                    }
+                        <button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
+                    </div>
                 }
+                else
+                {
+                    <div class="fso fso-file">
+                        <div>
+                            <i class="fas fa-file"></i>
+                            <span>@fso.Name&nbsp;&nbsp;</span>
+                            <span><b>Size:&nbsp;</b></span>
+                            <span class="file-size">@fso.FileSize</span>
+                        </div>
+                        <button type="submit" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                        <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
+                        @if (Model.Roles.Contains("PremiumUser"))
+                        {
+                            <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
+                        }
+
+                    </div>
+                }
+            }
         </form>
     </div>
     <div class="col-md-4">

@@ -39,7 +39,7 @@ namespace SimpleCloudStorage.Pages
         {
             User user = await _context.Users.FirstOrDefaultAsync(p => p.UserAccountId == _userManager.GetUserId(User));
             SharedToUserList = new List<Share>();
-
+      
             var shares = await _context.Shares.ToListAsync();
 
             SharedToUserList = from shr in shares
@@ -53,12 +53,18 @@ namespace SimpleCloudStorage.Pages
                 s.ToUser = await _context.Users.FindAsync(s.ToUserId);
             }
 
-
-/*            foreach (var s in toUserShares)
+            SharedFromUserList = new List<Share>();
+            SharedFromUserList = from shr in shares
+                               where shr.FromUserId == user.Id
+                               orderby shr.SharedDate descending
+                               select shr;
+            foreach (var s in SharedFromUserList)
             {
-                fso = await _context.FileSystemObjects.FindAsync(s.FsoId);
-                SharedFsoList.Add(fso);
-            }*/
+                s.Fso = await _context.FileSystemObjects.FindAsync(s.FsoId);
+                s.FromUser = await _context.Users.FindAsync(s.FromUserId);
+                s.ToUser = await _context.Users.FindAsync(s.ToUserId);
+            }
+
             return Page();
         }
 
@@ -90,10 +96,8 @@ namespace SimpleCloudStorage.Pages
                 catch (Exception ex)
                 {
                     //Data = ex.Message;
-                    return Page();
+                    return RedirectToPage("HomePage", new { id = returnId });
                 }
-                
-                               
             }
             return RedirectToPage("HomePage", new { id = returnId });
         }
@@ -112,6 +116,17 @@ namespace SimpleCloudStorage.Pages
             memory.Position = 0;
 
             return File(memory, "application/octet-stream", fileName);
+        }
+
+        public async Task<ActionResult> OnPostDeleteAsync(int fromUserId, int toUserId, int fsoId)
+        {
+            var share = await _context.Shares.FindAsync(fromUserId, toUserId, fsoId);
+            if (share != null)
+            {
+                _context.Shares.Remove(share);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("Share");
         }
     }
 }
