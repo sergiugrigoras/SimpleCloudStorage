@@ -27,25 +27,37 @@ namespace SimpleCloudStorage.Pages
             _userManager = userManager;
             _storageLocation = configuration["StorageLocation"];
         }
-
+        [BindProperty]
         public PublicFile PubFile { get; set; }
-        public async Task<IActionResult> OnGetAsync(string id)
+        public async Task<IActionResult> OnGetAsync(string ?id)
         {
-            PubFile = await _context.PublicFiles.FirstOrDefaultAsync(p => p.PublicId == id);
-            PubFile.FromUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == PubFile.FromUserId);
-            PubFile.Fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == PubFile.FsoId);
+            if (id != null)
+            {
+                PubFile = await _context.PublicFiles.FirstOrDefaultAsync(p => p.PublicId == id);
+                PubFile.FromUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == PubFile.FromUserId);
+                PubFile.Fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == PubFile.FsoId);
+                return Page();
+            }
+            else
+            {
+                return RedirectToPage("Index");
+            }
             
-            return Page();
         }
         public async Task<IActionResult> OnPostAsync(int fsoId, int returnId)
         {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
             User FromUser = await _context.Users.FirstOrDefaultAsync(p => p.UserAccountId == _userManager.GetUserId(User));
             FileSystemObject fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == fsoId);
             PublicFile newPublicFile = new PublicFile();
             newPublicFile.FromUserId = FromUser.Id;
             newPublicFile.FsoId = fsoId;
             newPublicFile.SharedDate = DateTime.Now;
-            newPublicFile.PublicId = genHashFileName(fso.Name);
+            newPublicFile.PublicId = CreateMD5(fso.Name);
 
             try
             {
@@ -54,9 +66,8 @@ namespace SimpleCloudStorage.Pages
             }
             catch (Exception ex)
             {
-                return Page();
+                return RedirectToPage("HomePage", new { id = returnId });
             }
-
             return RedirectToPage("HomePage", new { id = returnId });
         }
 
@@ -76,7 +87,7 @@ namespace SimpleCloudStorage.Pages
             return File(memory, "application/octet-stream", fileName);
         }
 
-        public string genHashFileName(string fileName)
+/*        public string GenHashFileName(string fileName)
         {
             StringBuilder sb = new StringBuilder();
             MemoryStream stream;
@@ -89,6 +100,28 @@ namespace SimpleCloudStorage.Pages
                 for (int i = 0; i < hashValue.Length; i++) sb.Append($"{hashValue[i]:x2}");
             }
             return sb.ToString();
+        }*/
+        public string CreateMD5(string input)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input + DateTime.Now);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // Convert the byte array to hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2"));
+                }
+                sb.Insert(8, "-")
+                    .Insert(13, "-")
+                    .Insert(18, "-")
+                    .Insert(23, "-");
+
+                return sb.ToString();
+            }
         }
     }
 }

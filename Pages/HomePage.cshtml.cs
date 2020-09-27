@@ -127,7 +127,8 @@ namespace SimpleCloudStorage.Pages
             {
                 string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
                 var uploadFileName = Path.GetFileName(file.FileName);
-                var hashFileName = genHashFileName(uploadFileName);
+                //var hashFileName = genHashFileName(uploadFileName);
+                var hashFileName = CreateMD5(uploadFileName);
                 var fileSize = file.Length;
 
                 using (var stream = System.IO.File.Create(filePath + hashFileName))
@@ -165,11 +166,11 @@ namespace SimpleCloudStorage.Pages
 
         public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int returnId)
         {
-            await deleteFsoAsync(fsoId);
+            await DeleteFsoAsync(fsoId);
             return RedirectToPage("./HomePage", new { id = returnId });
         }
 
-        private async Task deleteFsoAsync(int id)
+        private async Task DeleteFsoAsync(int id)
         {
             var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
             if (!fso.IsFolder)
@@ -177,7 +178,7 @@ namespace SimpleCloudStorage.Pages
                 var fullFilePath = _storageLocation + _userManager.GetUserId(User) + "/" + fso.FileName;
                 _context.FileSystemObjects.Remove(fso);
                 await _context.SaveChangesAsync();
-                deleteFile(fullFilePath);
+                DeleteFile(fullFilePath);
             }
             else
             {
@@ -188,14 +189,14 @@ namespace SimpleCloudStorage.Pages
                            select dir;
                 foreach (var f in subDirList)
                 {
-                    await deleteFsoAsync(f.Id);
+                    await DeleteFsoAsync(f.Id);
                 }
                 _context.FileSystemObjects.Remove(fso);
                 await _context.SaveChangesAsync();
             }
         }
 
-        private void deleteFile(string fullPath)
+        private void DeleteFile(string fullPath)
         {
             if (System.IO.File.Exists(fullPath))
             {
@@ -209,29 +210,53 @@ namespace SimpleCloudStorage.Pages
             }
         }
 
-        public string genHashFileName(string fileName)
+        public string CreateMD5(string input)
         {
-            StringBuilder sb = new StringBuilder();
-            MemoryStream stream;
-
-            using (SHA256 mySHA256 = SHA256.Create())
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
             {
-                byte[] byteArray = Encoding.UTF8.GetBytes(fileName + DateTime.Now.ToString());
-                stream = new MemoryStream(byteArray);
-                byte[] hashValue = mySHA256.ComputeHash(stream);
-                for (int i = 0; i < hashValue.Length; i++) sb.Append($"{hashValue[i]:x2}");
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input + DateTime.Now);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                // Convert the byte array to hexadecimal string
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2"));
+                }
+                sb.Insert(8, "-")
+                    .Insert(13, "-")
+                    .Insert(18, "-")
+                    .Insert(23, "-");
+
+                return sb.ToString();
             }
-            return sb.ToString();
         }
-        public string bytesToString(long byteCount)
-        {
-            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-            if (byteCount == 0)
-                return "0" + suf[0];
-            long bytes = Math.Abs(byteCount);
-            int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-            double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-            return (Math.Sign(byteCount) * num).ToString() + suf[place];
-        }
+
+        /*        public string GenHashFileName(string input)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    MemoryStream stream;
+
+                    using (SHA256 mySHA256 = SHA256.Create())
+                    {
+                        byte[] byteArray = Encoding.UTF8.GetBytes(input + DateTime.Now.ToString());
+                        stream = new MemoryStream(byteArray);
+                        byte[] hashValue = mySHA256.ComputeHash(stream);
+                        for (int i = 0; i < hashValue.Length; i++) sb.Append($"{hashValue[i]:x2}");
+                    }
+                    return sb.ToString();
+                }*/
+
+        /*        public string bytesToString(long byteCount)
+                {
+                    string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+                    if (byteCount == 0)
+                        return "0" + suf[0];
+                    long bytes = Math.Abs(byteCount);
+                    int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+                    double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+                    return (Math.Sign(byteCount) * num).ToString() + suf[place];
+                }*/
     }
 }

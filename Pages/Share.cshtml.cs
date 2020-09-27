@@ -95,7 +95,6 @@ namespace SimpleCloudStorage.Pages
                 }
                 catch (Exception ex)
                 {
-                    //Data = ex.Message;
                     return RedirectToPage("HomePage", new { id = returnId });
                 }
             }
