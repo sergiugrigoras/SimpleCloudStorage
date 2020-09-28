@@ -5,12 +5,14 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-<h1>Public</h1>
+        <div class="public-file">
+            <div><b>File name:&nbsp;</b>@Model.PubFile.Fso.Name</div>
+            <div><b>File size:&nbsp;</b><span class="file-size">@Model.PubFile.Fso.FileSize</span></div>
+            <div>
+                <form method="post">
+                    <button type="button" class="btn btn-primary" onclick="copyToClipboardCurrentUrl()">Copy link</button>
+                    <button type="submit" class="btn btn-success" asp-route-fsoId="@Model.PubFile.FsoId" asp-route-fileName="@Model.PubFile.Fso.Name" asp-route-fromUserId="@Model.PubFile.FromUserId" asp-page-handler="Download">Download</button>
+                </form>
+            </div>
+        </div>
 
-@Model.PubFile.Fso.Name
-@Model.PubFile.FromUser.Name
-
-
-<form method="post">
-    <button type="submit" class="fso-action-btn" asp-route-fsoId="@Model.PubFile.FsoId" asp-route-fileName="@Model.PubFile.Fso.Name" asp-route-fromUserId="@Model.PubFile.FromUserId" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-</form>

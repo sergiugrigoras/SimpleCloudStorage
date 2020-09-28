@@ -11,6 +11,10 @@
     <div class="row">
         <div class="col-md-6">
             <h4>Shared with me</h4>
+            @if (Model.SharedToUserList.Count() == 0)
+            {
+                <div class="fso fso-file"><div><b>No files</b></div></div>
+            }
             @foreach (var s in Model.SharedToUserList)
             {
                 <div class="fso fso-file">
@@ -27,6 +31,10 @@
         </div>
         <div class="col-md-6">
             <h4>My shares</h4>
+            @if(Model.SharedFromUserList.Count() == 0)
+            {
+                <div class="fso fso-file"><div><b>No files</b></div></div>
+            }
             @foreach (var s in Model.SharedFromUserList)
             {
                 <div class="fso fso-file">
@@ -40,6 +48,26 @@
                     <button type="submit" asp-route-fsoId="@s.FsoId" asp-route-fileName="@s.Fso.Name" asp-route-fromUserId="@s.FromUserId" asp-page-handler="Download"><i class="fas fa-download"></i></button>
                     <button type="submit" asp-route-fromUserId="@s.FromUserId" asp-route-toUserId="@s.ToUserId" asp-route-fsoId="@s.FsoId" asp-page-handler="Delete"><i class="fas fa-ban"></i></button>
                 </div>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Public Files</h4>
+            @foreach (var s in Model.PublicFilesList)
+            {
+        <div class="fso fso-file">
+            <div>
+                <i class="fas fa-file"></i>
+                <span>@s.Fso.Name&nbsp;&nbsp;</span>
+                <span><b>Size:&nbsp;</b></span>
+                <span class="file-size">@s.Fso.FileSize</span>
+            </div>
+            <button type="button" onclick="redirectToPage('Public','@s.PublicId')" id="@s.PublicId"><i class="fas fa-external-link-alt"></i></button>
+            <button type="button"  onclick="copyToClipboardLink('Public','@s.PublicId')"><i class="fas fa-copy"></i></button>
+            <button type="submit" asp-page="Public" asp-route-fsoId="@s.FsoId" asp-route-fromUserId="@s.FromUserId" asp-page-handler="Delete"><i class="fas fa-ban"></i></button>
+            @*<button type="submit" asp-route-fromUserId="@s.FromUserId" asp-route-toUserId="@s.ToUserId" asp-route-fsoId="@s.FsoId" asp-page-handler="Delete"><i class="fas fa-ban"></i></button>*@
+        </div>
             }
         </div>
     </div>

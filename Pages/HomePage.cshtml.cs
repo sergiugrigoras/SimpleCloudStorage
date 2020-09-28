@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -24,6 +25,8 @@ namespace SimpleCloudStorage.Pages
         private UserManager<IdentityUser> _userManager;
         private IWebHostEnvironment _webroot;
         private string _storageLocation;
+        private long _premiumUserDiskSize;
+        private long _normalUserDiskSize;
 
         public HomePageModel(AppDbContext context, UserManager<IdentityUser> userManager, IWebHostEnvironment webroot, IConfiguration configuration)
         {
@@ -31,26 +34,33 @@ namespace SimpleCloudStorage.Pages
             _userManager = userManager;
             _webroot = webroot;
             _storageLocation = configuration["StorageLocation"];
+            _premiumUserDiskSize = long.Parse(configuration["StorageSize:PremiumUser"]);
+            _normalUserDiskSize = long.Parse(configuration["StorageSize:NormalUser"]);
         }
 
         [BindProperty]
         public User CurrentUser { get; set; }
-
+        
         [BindProperty]
         public FileSystemObject CurrentDir { get; set; }
-
+        
         [BindProperty]
         public List<FileSystemObject> fullPathList { get; set; }
-
+        
         [BindProperty]
         public IEnumerable<FileSystemObject> Children { get; set; }
-
+        
         [BindProperty]
         public IList<string> Roles { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        [BindProperty]
+        public long TotalBytes { get; set; }
+        
+        [BindProperty]
+        public long CurrentUserDiskSize { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int? id)
         {
-            
             CurrentDir = await _context.FileSystemObjects.FindAsync(id);
             if (CurrentDir == null)
             {
@@ -89,19 +99,30 @@ namespace SimpleCloudStorage.Pages
                        orderby dir.IsFolder descending, dir.CreateDate descending
                        select dir;
 
-
             // Resolve the user 
             var user = await _userManager.GetUserAsync(User);
             // Get the roles for the user
             Roles = await _userManager.GetRolesAsync(user);
-            return Page();
 
+
+            TotalBytes = await GetFsoSize(CurrentUser.HomeDirId);
+            if (Roles.Contains("NormalUser"))
+            {
+                CurrentUserDiskSize = _normalUserDiskSize;
+            }
+            else if (Roles.Contains("PremiumUser"))
+            {
+                CurrentUserDiskSize = _premiumUserDiskSize;
+
+            }
+            return Page();
         }
 
         public async Task<IActionResult> OnPostCreateFolderAsync(int returnId, string fsoName)
         {
             if (fsoName != null) 
             {
+
                 FileSystemObject newFso = new FileSystemObject();
                 newFso.Name = fsoName;
                 newFso.ParentId = returnId;
@@ -112,8 +133,16 @@ namespace SimpleCloudStorage.Pages
                 {
                     return Page();
                 }
-                _context.FileSystemObjects.Add(newFso);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.FileSystemObjects.Add(newFso);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    return RedirectToPage("HomePage", new { id = returnId });
+                }
+                
                 return RedirectToPage("HomePage", new { id = returnId });
             }
             
@@ -127,7 +156,6 @@ namespace SimpleCloudStorage.Pages
             {
                 string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
                 var uploadFileName = Path.GetFileName(file.FileName);
-                //var hashFileName = genHashFileName(uploadFileName);
                 var hashFileName = CreateMD5(uploadFileName);
                 var fileSize = file.Length;
 
@@ -143,8 +171,15 @@ namespace SimpleCloudStorage.Pages
                 newFso.FileName = hashFileName;
                 newFso.FileSize = file.Length;
                 newFso.CreateDate = DateTime.Now;
-                _context.FileSystemObjects.Add(newFso);
-                await _context.SaveChangesAsync();
+                try
+                {
+                    _context.FileSystemObjects.Add(newFso);
+                    await _context.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    return RedirectToPage("./HomePage", new { id = returnId });
+                }
             }
             return RedirectToPage("./HomePage", new { id = returnId });
         }
@@ -210,7 +245,7 @@ namespace SimpleCloudStorage.Pages
             }
         }
 
-        public string CreateMD5(string input)
+        private string CreateMD5(string input)
         {
             // Use input string to calculate MD5 hash
             using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
@@ -231,6 +266,29 @@ namespace SimpleCloudStorage.Pages
 
                 return sb.ToString();
             }
+        }
+
+        private async Task<long> GetFsoSize(int id)
+        {
+            long bytesCount = 0;
+            var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
+            if (!fso.IsFolder)
+            {
+                bytesCount = (long)fso.FileSize;
+            }
+            else
+            {
+                List<FileSystemObject> fsoList = await _context.FileSystemObjects.ToListAsync();
+                IEnumerable<FileSystemObject> subDirList = new List<FileSystemObject>();
+                subDirList = from dir in fsoList
+                             where dir.ParentId == id
+                             select dir;
+                foreach (var f in subDirList)
+                {
+                    bytesCount += await GetFsoSize(f.Id);
+                }
+            }
+            return bytesCount;
         }
 
         /*        public string GenHashFileName(string input)

@@ -27,9 +27,9 @@ namespace SimpleCloudStorage.Pages
             _userManager = userManager;
             _storageLocation = configuration["StorageLocation"];
         }
-        [BindProperty]
         public PublicFile PubFile { get; set; }
-        public async Task<IActionResult> OnGetAsync(string ?id)
+        
+        public async Task<IActionResult> OnGetAsync(string? id)
         {
             if (id != null)
             {
@@ -50,7 +50,6 @@ namespace SimpleCloudStorage.Pages
             {
                 return Page();
             }
-
             User FromUser = await _context.Users.FirstOrDefaultAsync(p => p.UserAccountId == _userManager.GetUserId(User));
             FileSystemObject fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == fsoId);
             PublicFile newPublicFile = new PublicFile();
@@ -68,7 +67,7 @@ namespace SimpleCloudStorage.Pages
             {
                 return RedirectToPage("HomePage", new { id = returnId });
             }
-            return RedirectToPage("HomePage", new { id = returnId });
+            return RedirectToPage("Public", new { id = newPublicFile.PublicId });
         }
 
         public async Task<ActionResult> OnPostDownloadAsync(int fsoId, string fileName, int fromUserId)
@@ -85,6 +84,17 @@ namespace SimpleCloudStorage.Pages
             memory.Position = 0;
 
             return File(memory, "application/octet-stream", fileName);
+        }
+
+        public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int fromUserId)
+        {
+            var pubfile = await _context.PublicFiles.FindAsync(fromUserId, fsoId);
+            if (pubfile != null)
+            {
+                _context.PublicFiles.Remove(pubfile);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToPage("Share");
         }
 
 /*        public string GenHashFileName(string fileName)

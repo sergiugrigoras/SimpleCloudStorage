@@ -27,7 +27,6 @@ namespace SimpleCloudStorage.Pages
         [BindProperty]
         public string HomeDirName { get; set; }
         
-        [BindProperty]
         public bool UserExists { get; set; } 
 
         public CreateHomePageModel(UserManager<IdentityUser> userManager, AppDbContext context)

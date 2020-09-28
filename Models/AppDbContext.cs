@@ -27,9 +27,15 @@ namespace SimpleCloudStorage.Models
             {
                 entity.HasIndex(e => e.ParentId);
 
+                entity.HasIndex(e => new { e.ParentId, e.Name })
+                    .HasName("uniq_fso_name")
+                    .IsUnique();
+
                 entity.Property(e => e.CreateDate).HasColumnType("datetime");
 
                 entity.Property(e => e.IsFolder).HasColumnName("isFolder");
+
+                entity.Property(e => e.Name).HasMaxLength(255);
 
                 entity.HasOne(d => d.Parent)
                     .WithMany(p => p.InverseParent)

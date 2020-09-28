@@ -29,19 +29,20 @@ namespace SimpleCloudStorage.Pages
         }
 
         [BindProperty]
-        public string Data { get; set; }
-
-        [BindProperty]
         public IEnumerable<Share> SharedToUserList { get; set; }
+        [BindProperty]
         public IEnumerable<Share> SharedFromUserList { get; set; }
+        [BindProperty]
+        public IEnumerable<PublicFile> PublicFilesList { get; set; }
+
 
         public async Task<IActionResult> OnGetAsync()
         {
             User user = await _context.Users.FirstOrDefaultAsync(p => p.UserAccountId == _userManager.GetUserId(User));
-            SharedToUserList = new List<Share>();
-      
             var shares = await _context.Shares.ToListAsync();
+            var pubfiles = await _context.PublicFiles.ToListAsync();
 
+            SharedToUserList = new List<Share>();
             SharedToUserList = from shr in shares
                                where shr.ToUserId ==user.Id
                                orderby shr.SharedDate descending
@@ -65,6 +66,16 @@ namespace SimpleCloudStorage.Pages
                 s.ToUser = await _context.Users.FindAsync(s.ToUserId);
             }
 
+            PublicFilesList = new List<PublicFile>();
+            PublicFilesList = from pf in pubfiles
+                              where pf.FromUserId == user.Id
+                              orderby pf.SharedDate descending
+                              select pf;
+            foreach (var s in PublicFilesList)
+            {
+                s.FromUser = await _context.Users.FindAsync(s.FromUserId);
+                s.Fso = await _context.FileSystemObjects.FindAsync(s.FsoId);
+            }
             return Page();
         }
 

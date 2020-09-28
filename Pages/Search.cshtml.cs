@@ -20,13 +20,10 @@ namespace SimpleCloudStorage.Pages
         private UserManager<IdentityUser> _userManager;
         private string _storageLocation;
 
-        [BindProperty]
         public IEnumerable<FileSystemObject> SearchResults { get; set; }
         
-        [BindProperty]
         public List<FileSystemObject> SearchScope { get; set; }
         
-        [BindProperty]
         public FileSystemObject CurrentDir { get; set; }
 
         public SearchModel(AppDbContext context, UserManager<IdentityUser> userManager, IConfiguration configuration)
