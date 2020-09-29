@@ -19,7 +19,7 @@ namespace SimpleCloudStorage.Models
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Share> Shares { get; set; }
         public virtual DbSet<PublicFile> PublicFiles { get; set; }
-
+        public virtual DbSet<Note> Notes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -67,6 +67,13 @@ namespace SimpleCloudStorage.Models
                 entity.Property(e => e.PublicId).IsRequired();
 
                 entity.Property(e => e.SharedDate).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<Note>(entity =>
+            {
+                entity.Property(e => e.CreationDate).HasColumnType("datetime");
+
+                entity.Property(e => e.Title).HasMaxLength(255);
             });
 
             OnModelCreatingPartial(modelBuilder);

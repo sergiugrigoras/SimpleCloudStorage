@@ -1,0 +1,70 @@
+﻿@page
+@model SimpleCloudStorage.Pages.NoteModel
+@{
+    ViewData["Title"] = "Note";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<h1>Note</h1>
+
+
+
+<div class="note-box">
+    <form method="post" id="note-form">
+        <div class="card" style="width: 22rem;">
+            <div class="card-body">
+                <div class="form-group">
+                    <input asp-for="Note.Title" type="text" class="form-control" id="note-title" placeholder="Title">
+                </div>
+                <div class="form-group">
+                    <label for="note-body"></label>
+                    <textarea asp-for="Note.Body" class="form-control" id="note-body" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-primary" value="Save">
+                    <button class="btn btn-danger" id="reset-form">Reset</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    @foreach (var note in Model.Notes)
+    {
+        <div class="card" style="width: 22rem;">
+            <div class="card-body">
+                <h5 class="card-title">@note.Title</h5>
+                <h6 class="card-subtitle mb-2 text-muted">@note.CreationDate</h6>
+                <p class="card-text">@note.Body</p>
+            </div>
+            <div class="note-btn">
+                <button class="btn" type="button" data-toggle="modal" data-target="#confirm-delete-note" data-noteid="@note.Id" data-notetitle="@note.Title"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+    }
+</div>
+
+
+
+
+<!--Delete Confirmation Modal Dialog-->
+<div class="modal fade" id="confirm-delete-note" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Confirm Delete</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cancel">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="confirm-text"></h6>
+                    <input type="hidden" id="note-id" name="noteId" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

@@ -296,3 +296,24 @@ body {
     white-space: nowrap;
     text-overflow: ellipsis;
 }
+
+.note-box {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+}
+
+.card {
+margin: 0.5rem;
+}
+.note-btn {
+    margin-left: auto;
+    margin-right: 0;
+}
+    .note-btn button:hover {
+    color:red;
+    }
+
+    .note-btn button:active {
+        transform: scale(0.9);
+    }

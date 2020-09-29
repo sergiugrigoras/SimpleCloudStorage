@@ -23,7 +23,7 @@ namespace SimpleCloudStorage.Pages
     {
         private readonly AppDbContext _context;
         private UserManager<IdentityUser> _userManager;
-        private IWebHostEnvironment _webroot;
+        //private IWebHostEnvironment _webroot;
         private string _storageLocation;
         private long _premiumUserDiskSize;
         private long _normalUserDiskSize;
@@ -32,7 +32,7 @@ namespace SimpleCloudStorage.Pages
         {
             _context = context;
             _userManager = userManager;
-            _webroot = webroot;
+            //_webroot = webroot;
             _storageLocation = configuration["StorageLocation"];
             _premiumUserDiskSize = long.Parse(configuration["StorageSize:PremiumUser"]);
             _normalUserDiskSize = long.Parse(configuration["StorageSize:NormalUser"]);

@@ -12,6 +12,14 @@ $('#confirm-delete').on('show.bs.modal', function (event) {
     modal.find('#fso-id').val(fsoid)
 });
 
+$('#confirm-delete-note').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget)
+    var noteId = button.data('noteid')
+    var noteTitle = button.data('notetitle')
+    var modal = $(this)
+    modal.find('#confirm-text').text('Are you sure want to delete note ' + noteTitle)
+    modal.find('#note-id').val(noteId)
+});
 
 $('#confirm-share').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget)
@@ -135,3 +143,8 @@ function copyToClipboardCurrentUrl() {
     document.execCommand("copy");
     $temp.remove();
 }
+
+
+$('#reset').click(function () {
+    $('#note-form')[0].reset();
+});
