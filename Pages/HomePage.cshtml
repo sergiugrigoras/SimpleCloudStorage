@@ -43,36 +43,38 @@
                     <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
                     <button asp-page="Search" type="submit"><i class="fas fa-search"></i></button>
             </div>
-            @foreach (var fso in Model.Children)
-            {
-                if (fso.IsFolder)
+            <div id="explorer">
+                @foreach (var fso in Model.Children)
                 {
-                    <div class="fso fso-folder" data-id="@fso.Id" >
-                        <div>
-                            <i class="fas fa-folder"></i>
-                            <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
+                    if (fso.IsFolder)
+                    {
+                        <div class="fso fso-folder" data-id="@fso.Id" data-name="@fso.Name" data-date="@fso.CreateDate" data-size="@fso.FileSize">
+                            <div>
+                                <i class="fas fa-folder"></i>
+                                <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
+                            </div>
+                            <button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
                         </div>
-                        <button type="button" class="fso-action-btn" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="Folder"><i class="fas fa-trash-alt"></i></button>
-                    </div>
-                }
-                else
-                {
-                    <div class="fso fso-file">
-                        <div>
-                            <i class="fas fa-file"></i>
-                            <span class="file-name">@fso.Name</span>&nbsp;&nbsp;
-                            <span><b>Size:&nbsp;</b></span>
-                            <span class="file-size">@fso.FileSize</span>
+                    }
+                    else
+                    {
+                        <div class="fso fso-file" data-id="@fso.Id" data-name="@fso.Name" data-date="@fso.CreateDate." data-size="@fso.FileSize">
+                            <div>
+                                <i class="fas fa-file"></i>
+                                <span class="file-name">@fso.Name</span>&nbsp;&nbsp;
+                                <span><b>Size:&nbsp;</b></span>
+                                <span class="file-size">@fso.FileSize</span>
+                            </div>
+                            <button type="submit" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                            @if (Model.Roles.Contains("PremiumUser"))
+                            {
+                                <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
+                            }
+                            <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
                         </div>
-                        <button type="submit" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-                        @if (Model.Roles.Contains("PremiumUser"))
-                        {
-                            <button type="button" data-toggle="modal" data-target="#confirm-share" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-share-alt"></i></button>
-                        }
-                        <button type="button" data-toggle="modal" data-target="#confirm-delete" data-fsoname="@fso.Name" data-fsoid="@fso.Id" data-fsotype="File"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    }
                 }
-            }
+            </div>
         </form>
     </div>
     <div class="col-md-4">

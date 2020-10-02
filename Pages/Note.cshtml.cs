@@ -49,15 +49,24 @@ namespace SimpleCloudStorage.Pages
             {
                 return Page();
             }
+
+                var user = _context.Users.FirstOrDefault(p => p.UserAccountId == _userManager.GetUserId(User));
+                Note.UserId = user.Id;
+                Note.CreationDate = DateTime.Now;
+                _context.Notes.Add(Note);
+                await _context.SaveChangesAsync();
+                return RedirectToPage("Note");
+        }
+
+        public async Task<IActionResult> OnPostUpdateAsync()
+        {
             var user = _context.Users.FirstOrDefault(p => p.UserAccountId == _userManager.GetUserId(User));
             Note.UserId = user.Id;
             Note.CreationDate = DateTime.Now;
-            _context.Notes.Add(Note);
+            _context.Notes.Update(Note);
             await _context.SaveChangesAsync();
-
             return RedirectToPage("Note");
         }
-
         public async Task<IActionResult> OnPostDeleteAsync(int noteId)
         {
             var note = _context.Notes.Find(noteId);

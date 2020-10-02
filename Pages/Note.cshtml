@@ -7,22 +7,42 @@
 
 <h1>Note</h1>
 
-
-
 <div class="note-box">
-    <form method="post" id="note-form">
-        <div class="card" style="width: 22rem;">
+    <div class="card" style="width: 22rem;" id="create-new-note">
+        <div class="card-body new-note">
+            <i class="fas fa-plus"></i>
+        </div>
+    </div>
+    <form method="post" id="new-note-form">
+        <div class="card" style="width: 22rem;" id="new-note">
             <div class="card-body">
                 <div class="form-group">
-                    <input asp-for="Note.Title" type="text" class="form-control" id="note-title" placeholder="Title">
+                    <input asp-for="Note.Title" type="text" class="form-control" placeholder="Title" id="new-note-title">
                 </div>
                 <div class="form-group">
-                    <label for="note-body"></label>
-                    <textarea asp-for="Note.Body" class="form-control" id="note-body" rows="3"></textarea>
+                    <textarea asp-for="Note.Body" class="form-control" rows="3" id="new-note-body"></textarea>
                 </div>
                 <div class="form-group">
-                    <input type="submit" class="btn btn-primary" value="Save">
-                    <button class="btn btn-danger" id="reset-form">Reset</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="reset" class="btn btn-danger">Reset</button>
+                    <button type="button"class="btn btn-success" id="cancel-new-note">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <form method="post" id="update-note-form">
+        <div class="card" style="width: 22rem;" id="new-note">
+            <div class="card-body">
+                <input asp-for="Note.Id" type="hidden" class="form-control" id="update-note-id">
+                <div class="form-group">
+                    <input asp-for="Note.Title" type="text" class="form-control" id="update-note-title">
+                </div>
+                <div class="form-group">
+                    <textarea asp-for="Note.Body" class="form-control" rows="3" id="update-note-body"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-warning" asp-page-handler="Update">Update</button>
+                    <button type="button" class="btn btn-success" id="cancel-update-note">Cancel</button>
                 </div>
             </div>
         </div>
@@ -31,12 +51,13 @@
     {
         <div class="card" style="width: 22rem;">
             <div class="card-body">
-                <h5 class="card-title">@note.Title</h5>
+                <h5 class="card-title" id="note-title-@note.Id">@note.Title</h5>
                 <h6 class="card-subtitle mb-2 text-muted">@note.CreationDate</h6>
-                <p class="card-text">@note.Body</p>
+                <p class="card-text" id="note-body-@note.Id">@note.Body</p>
             </div>
             <div class="note-btn">
-                <button class="btn" type="button" data-toggle="modal" data-target="#confirm-delete-note" data-noteid="@note.Id" data-notetitle="@note.Title"><i class="fas fa-trash-alt"></i></button>
+                <button type="button" data-toggle="modal" data-target="#confirm-delete-note" data-noteid="@note.Id" data-notetitle="@note.Title"><i class="fas fa-trash-alt"></i></button>
+                <button type="button" onclick="editNote(@note.Id)"><i class="fas fa-edit"></i></button>
             </div>
         </div>
     }
@@ -58,7 +79,7 @@
                 </div>
                 <div class="modal-body">
                     <h6 id="confirm-text"></h6>
-                    <input type="hidden" id="note-id" name="noteId" />
+                    <input type="hidden" id="delete-note-id" name="noteId" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>

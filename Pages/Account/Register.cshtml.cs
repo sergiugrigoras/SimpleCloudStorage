@@ -40,7 +40,7 @@ namespace SimpleCloudStorage.Pages
         {
             if (_signInManager.IsSignedIn(User))
             {
-                return RedirectToPage("./Index");
+                return RedirectToPage("../Index");
             }
             return Page();
         }
@@ -56,9 +56,9 @@ namespace SimpleCloudStorage.Pages
             {
                 _userManager.AddToRoleAsync(newAspNetUser, AccountType).Wait();
                 _signInManager.SignInAsync(newAspNetUser, false).Wait();
-                return RedirectToPage("CreateHomePage");
+                return RedirectToPage("../CreateHomePage");
             }
-            return RedirectToPage("./Index");
+            return RedirectToPage("../Index");
         }
 
     }

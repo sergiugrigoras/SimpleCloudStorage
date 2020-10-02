@@ -2,6 +2,41 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your Javascript code.
+
+
+$('#new-note-form').hide();
+$('#update-note-form').hide();
+
+$('#cancel-new-note').on('click', function () {
+    $('#new-note-form').hide();
+    $('#create-new-note').show();
+});
+
+$('#create-new-note').on('click', function () {
+    $('#new-note-form').show();
+    $('#new-note-title').focus();
+    $(this).hide();
+});
+
+$('#cancel-update-note').on('click', function () {
+    $('#new-note-form').hide();
+    $('#create-new-note').show();
+    $('#update-note-form').hide();
+});
+function editNote(id) {
+    $('#new-note-form').hide();
+    $('#create-new-note').hide();
+    $('#update-note-form').show();
+    var newTitle = $('#note-title-' + id).html();
+    var newBody = $('#note-body-' + id).html();
+    $('#update-note-id').val(id);
+    $('#update-note-title').val(newTitle);
+    $('#update-note-body').val(newBody);
+    window.scrollTo(0, 0);
+    $('#update-note-title').focus();
+
+}
+
 $('#confirm-delete').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget)
     var fsoname = button.data('fsoname')
@@ -18,7 +53,7 @@ $('#confirm-delete-note').on('show.bs.modal', function (event) {
     var noteTitle = button.data('notetitle')
     var modal = $(this)
     modal.find('#confirm-text').text('Are you sure want to delete note ' + noteTitle)
-    modal.find('#note-id').val(noteId)
+    modal.find('#delete-note-id').val(noteId)
 });
 
 $('#confirm-share').on('show.bs.modal', function (event) {
@@ -119,11 +154,49 @@ $("#new-folder-form").submit(function (event) {
     return;
 });
 
-/*folderNameInput.onkeyup = function () {
-    if (folderListArray.indexOf(this.value) >= 0) {
-        showalert('Folder <b>' + this.value + '</b> already exists', 'alert-danger');
+var fsoList = document.querySelectorAll('.fso-file');
+var fsoArr = []
+var i = 0;
+fsoList.forEach(function (fso) {
+    fsoArr[i++] = fso;
+/*  let id = $(fso).data('id');
+    let name = $(fso).data('name');
+    let date = $(fso).data('date');
+    let size = $(fso).data('size');
+    console.log(`${id} ${name} ${date} ${size}`);*/
+})
+function sortBySize(h) {
+    if (h >= 0) {
+        fsoArr.sort(function (a, b) {
+            return $(a).data('size') - $(b).data('size');
+        });
+    } else {
+        fsoArr.sort(function (a, b) {
+            return $(b).data('size') - $(a).data('size');
+        });
     }
-}*/
+    $('#explorer').append(fsoArr);
+}
+
+function sortByName(h) {
+    if (h >= 0) {
+        fsoArr.sort(function (a, b) {
+            if ($(a).data('name') < $(b).data('name'))
+                return -1;
+            else return 1;
+        });
+    } else {
+        fsoArr.sort(function (a, b) {
+            if ($(a).data('name') > $(b).data('name'))
+                return -1;
+            else return 1;
+        });
+    }
+    $('#explorer').append(fsoArr);
+ } 
+
+
+
 
 
 
@@ -143,8 +216,3 @@ function copyToClipboardCurrentUrl() {
     document.execCommand("copy");
     $temp.remove();
 }
-
-
-$('#reset').click(function () {
-    $('#note-form')[0].reset();
-});
