@@ -71,9 +71,34 @@ body {
 }
 
 /*My css classes*/
+
+#new-folder-alerts, #upload-file-alerts {
+    width: 80vw;
+    position: fixed;
+    left: 50%;
+    margin-left: -40vw;
+    top: 1rem;
+    z-index: 1000;
+}
+
+.modal-content {
+margin-top: 5rem;
+}
 .path-bar {
     display: flex;
     flex-wrap: wrap;
+    border-top: 1px solid #ced4da;
+}
+
+.tool-bar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: white;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
 }
 
 .path-bar-folder {
@@ -94,6 +119,9 @@ body {
     margin: 0.2rem 0.3rem;
 }
 
+.action-buttons {
+display:flex;
+}
 
 .search-box {
     border-radius: 0.25rem;
@@ -140,161 +168,72 @@ body {
     text-align: right;
 }
 
-.create-folder-box {
-    border-radius: 0.25rem;
-    border: 1px solid #ced4da;
-    margin: 0.2rem 0rem;
-    display: flex;
+
+#explorer {
+    margin-top:1rem;
+}
+.fso {
+    border-top: 1px solid #ced4da;
+    dis
 }
 
-    .create-folder-box input[type=text] {
-        flex-grow: 2;
-        border: none;
-        width: 100%;
-        margin: 0.5rem;
-    }
-
-        .create-folder-box input[type=text]:focus {
-            outline: none;
-        }
-
-    .create-folder-box button {
-        border: none;
-        background: transparent;
-        margin: 0.5rem;
-    }
-
-        .create-folder-box button:focus {
-            outline: none;
-            transform: scale(0.9);
-        }
-
-.upload-file-box {
-    border-radius: 0.25rem;
-    border: 1px solid #ced4da;
-    margin: 0.2rem 0rem;
-    display: flex;
+.fso-selected {
+    background-color: rgba(0, 123, 255, 0.25);
 }
 
-    .upload-file-box input[type=file] {
-        flex-grow: 2;
-        border: none;
-        width: 100%;
-        margin: 0.5rem;
-    }
+.fso-info-1 {
+display:flex;
+}
+.fso-name {
+flex-grow:1;
+}
+.fso-info-2 {
+font-size: .7rem;
+}
 
-        .upload-file-box input[type=file]:focus {
-            outline: none;
-        }
-
-    .upload-file-box button {
-        border: none;
-        background: transparent;
-        margin: 0.5rem;
-    }
-
-        .upload-file-box button:focus {
-            outline: none;
-            transform: scale(0.9);
-        }
-
-.search-box:focus-within, .upload-file-box:focus-within, .create-folder-box:focus-within {
+.search-box:focus-within, .upload-file-box:focus-within {
     border-color: #66afe9;
     outline: 0;
     -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
     box-shadow: inset 0 1px 1px rgba(0,0,0,.075),0 0 8px rgba(102,175,233,.6);
 }
-.fso {
-    display: flex;
-/*    flex-wrap: wrap;*/
-    position: relative;
-    margin-bottom: 0.2rem;
-    border: 1px solid transparent;
+
+#input-create-folder:focus {
+    border-color: #66afe9;
+    outline: 0;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+}
+#input-create-folder {
     border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    padding: 0.5rem;
+    width:100%;
+    margin:0 auto;
 }
 
-.fso-folder {
-    color: #856404;
-    background-color: #fff3cd;
-    border-color: #ffeeba;
-}
 
-    .fso-folder:hover {
-        border-color: #856404;
-        outline: 0;
-        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
-        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #856404;
-    }
-
-.fso-file {
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-}
-
-    .fso-file:hover {
-        border-color: #155724;
-        outline: 0;
-        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
-        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px #155724;
-    }
-.fso > div {
-    flex-grow: 2;
-    margin: 0.5rem;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.fso a {
-    color: currentColor;
-    text-decoration: none;
-}
-
-.fso button, .fso>a {
-    display: inline-block;
-    border: none;
-    background: transparent;
-    color: currentcolor;
-    margin: 0.5rem 0.8rem;
-}
-    .fso button:focus {
-        outline: none;
-    }
-
-    .fso button:active {
-        transform: scale(0.9);
-    }
-
-.folder-name, .file-name {
+    /*.folder-name, .file-name {
     word-wrap: break-word;
-}
-.public-file {
-    position: absolute;
-    border: 1px solid;
-    border-radius: 0.25rem;
-    color: #155724;
-    background-color: #d4edda;
-    border-color: #c3e6cb;
-    margin: 0;
-    padding: 1rem 2rem;
-    top: 40%;
-    left: 50%;
-    margin-right: -50%;
-    transform: translate(-50%, -50%);
-}
+}*/
+    .public-file {
+        position: absolute;
+        border: 1px solid;
+        border-radius: 0.25rem;
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        margin: 0;
+        padding: 1rem 2rem;
+        top: 40%;
+        left: 50%;
+        margin-right: -50%;
+        transform: translate(-50%, -50%);
+    }
 
     .public-file button {
     width: 100%;
     margin: .5rem 0rem;
-}
-
-.modal-body {
-    max-width: 90%;
-    display: inline-block;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .note-box {

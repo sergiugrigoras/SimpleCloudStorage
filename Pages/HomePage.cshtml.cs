@@ -96,7 +96,7 @@ namespace SimpleCloudStorage.Pages
 
             Children = from dir in FsoList
                        where dir.ParentId == CurrentDir.Id
-                       orderby dir.IsFolder descending, dir.CreateDate descending
+                       orderby dir.IsFolder descending, dir.Name ascending
                        select dir;
 
             // Resolve the user 
@@ -183,10 +183,10 @@ namespace SimpleCloudStorage.Pages
             }
             return RedirectToPage("./HomePage", new { id = returnId });
         }
-        public async Task<ActionResult> OnPostDownloadAsync(int id)
+        public async Task<ActionResult> OnPostDownloadAsync(int fsoId)
         {
             string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
-            var fso = _context.FileSystemObjects.FirstOrDefault(f => f.Id == id);
+            var fso = _context.FileSystemObjects.FirstOrDefault(f => f.Id == fsoId);
             var hashFileName = fso.FileName;
             var downloadFileName = fso.Name;
 
