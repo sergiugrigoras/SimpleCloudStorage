@@ -6,7 +6,6 @@
 }
 
 <h1>Note</h1>
-
 <div class="note-box">
     <div class="card" style="width: 22rem;" id="create-new-note">
         <div class="card-body new-note">
@@ -14,7 +13,7 @@
         </div>
     </div>
     <form method="post" id="new-note-form">
-        <div class="card" style="width: 22rem;" id="new-note">
+        <div class="card" style="width: 22rem;" id="">
             <div class="card-body">
                 <div class="form-group">
                     <input asp-for="Note.Title" type="text" class="form-control" placeholder="Title" id="new-note-title">
@@ -25,13 +24,13 @@
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary">Save</button>
                     <button type="reset" class="btn btn-danger">Reset</button>
-                    <button type="button"class="btn btn-success" id="cancel-new-note">Cancel</button>
+                    <button type="button" class="btn btn-success" id="cancel-new-note">Cancel</button>
                 </div>
             </div>
         </div>
     </form>
     <form method="post" id="update-note-form">
-        <div class="card" style="width: 22rem;" id="new-note">
+        <div class="card" style="width: 22rem;" id="">
             <div class="card-body">
                 <input asp-for="Note.Id" type="hidden" class="form-control" id="update-note-id">
                 <div class="form-group">
@@ -49,7 +48,7 @@
     </form>
     @foreach (var note in Model.Notes)
     {
-        <div class="card" style="width: 22rem;">
+        <div class="card mynote" style="width: 22rem;">
             <div class="card-body">
                 <h5 class="card-title" id="note-title-@note.Id">@note.Title</h5>
                 <h6 class="card-subtitle mb-2 text-muted">@note.CreationDate</h6>

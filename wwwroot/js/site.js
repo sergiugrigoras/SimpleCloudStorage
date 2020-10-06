@@ -79,8 +79,12 @@ function editNote(id) {
     $('#update-note-body').val(newBody);
     window.scrollTo(0, 0);
     $('#update-note-title').focus();
-
 }
+
+notesBgColorArray = ['rgb(255, 191, 0)', 'rgb(255 255 130)', 'rgb(191, 255, 0)', 'rgb(101 201 255)', 'rgb(101 178 255)', 'rgb(195 134 255)'];
+$('.mynote').each(function () {
+    $(this).css("background-color", notesBgColorArray[Math.floor(Math.random() * notesBgColorArray.length)]);
+});
 //
 
 //Delete Confirm Modal
@@ -156,22 +160,25 @@ fileList.forEach(function (fl) {
 
 var maxFileSize = 52428800;
 var uploadField = document.getElementById("input-upload-file");
-uploadField.onchange = function () {
-    if (this.files[0].size > maxFileSize) {
-        showalert('File is too big <b>' + readableBytes(maxFileSize) + ' </b>Max', 'alert-danger', $('#upload-file-alerts'))
-        this.value = "";
-    }
-    else if (fileListArray.indexOf(this.files[0].name) >= 0) {
-        /*fileListArray.push(this.files[0].name);*/
-        showalert('File <b>' + this.files[0].name + '</b> already exists', 'alert-danger', $('#upload-file-alerts'))
-        this.value = "";
-    }
-    else if ((this.files[0].size + totalBytes) > diskSize) {
-        showalert('Not enough space, disk full', 'alert-danger', $('#upload-file-alerts'))
-    } else {
-        $('#submit-upload').trigger('click');
-    }
-};
+if (uploadField != null) {
+    uploadField.onchange = function () {
+        if (this.files[0].size > maxFileSize) {
+            showalert('File is too big <b>' + readableBytes(maxFileSize) + ' </b>Max', 'alert-danger', $('#upload-file-alerts'))
+            this.value = "";
+        }
+        else if (fileListArray.indexOf(this.files[0].name) >= 0) {
+            /*fileListArray.push(this.files[0].name);*/
+            showalert('File <b>' + this.files[0].name + '</b> already exists', 'alert-danger', $('#upload-file-alerts'))
+            this.value = "";
+        }
+        else if ((this.files[0].size + totalBytes) > diskSize) {
+            showalert('Not enough space, disk full', 'alert-danger', $('#upload-file-alerts'))
+        } else {
+            $('#submit-upload').trigger('click');
+        }
+    };
+}
+
 //
 
 

@@ -20,8 +20,7 @@ namespace SimpleCloudStorage.Pages
         
         [BindProperty]
         public Note Note { get; set; }
-
-
+        
         public NoteModel(AppDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;

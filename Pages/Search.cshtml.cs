@@ -71,11 +71,6 @@ namespace SimpleCloudStorage.Pages
                     await searchDir(f.Id);
                 }
             }
-            /*
-             var results = from c in db.costumers
-              where SqlMethods.Like(c.FullName, "%"+FirstName+"%,"+LastName)
-              select c;
-            */
         }
 
         public void filterResults(string kWord)

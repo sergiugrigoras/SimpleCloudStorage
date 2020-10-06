@@ -121,14 +121,23 @@ margin-top: 5rem;
 
 .action-buttons {
 display:flex;
+flex-wrap:wrap;
 }
 
-.search-box {
-    border-radius: 0.25rem;
-    border: 1px solid #ced4da;
-    margin: 0.2rem 0rem;
-    display: flex;
-}
+    .action-buttons button {
+    font-size:1.5rem;
+    }
+
+        .action-buttons button:hover {
+        color:orangered;
+        }
+
+        .search-box {
+            border-radius: 0.25rem;
+            border: 1px solid #ced4da;
+            margin: 0.2rem 0rem;
+            display: flex;
+        }
 
     .search-box input[type=text] {
         flex-grow: 2;
@@ -172,13 +181,14 @@ display:flex;
 #explorer {
     margin-top:1rem;
 }
-.fso {
-    border-top: 1px solid #ced4da;
-    dis
-}
 
 .fso-selected {
     background-color: rgba(0, 123, 255, 0.25);
+}
+
+.fso {
+    border-top: 1px solid #ced4da;
+    display: flex;
 }
 
 .fso-info-1 {
@@ -187,8 +197,32 @@ display:flex;
 .fso-name {
 flex-grow:1;
 }
+    .fso-name a {
+        text-decoration: none;
+        color: currentcolor;
+    }
 .fso-info-2 {
 font-size: .7rem;
+}
+.fso-box-1 {
+    font-size: 2rem;
+    margin: 0 .5rem;
+}
+.fso-box-2 {
+    flex-grow: 1;
+}
+.fso-box-3 button{
+    font-size: 1.5rem;
+}
+    .fso-box-3 button:hover {
+        color: #7291ff;
+    }
+
+.folder-icon-box {
+    color: #ffd242;
+}
+.file-icon-box {
+    color: #7291ff;
 }
 
 .search-box:focus-within, .upload-file-box:focus-within {
@@ -281,4 +315,14 @@ margin: 0.5rem;
     font-size: 8rem;
     text-align: center;
     cursor:pointer;
+}
+
+
+.share-box {
+    margin-top: 2rem;
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    /*background-color: #ced4da4f;*/
+    background-color: #f9ff774f;
+    padding: 1rem;
 }

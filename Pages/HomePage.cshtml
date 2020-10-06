@@ -80,27 +80,36 @@
             @foreach (var fso in Model.Children)
             {
                 <div data-id="@fso.Id" data-name="@fso.Name" data-date="@fso.CreateDate" data-size="@fso.FileSize" data-isfolder="@fso.IsFolder" id="fso-@fso.Id" class="fso">
-                    <div class="fso-info-1">
-                        <div class="fso-name">
-                            @if (fso.IsFolder)
+                    <div class="fso-box-1">
+                        @if (fso.IsFolder) {
+                            <div class="folder-icon-box"><i class="fas fa-folder"></i></div>
+                        }
+                        else { 
+                            <div class="file-icon-box"><i class="fas fa-file"></i></div>
+                        }
+
+                    </div>
+                    <div class="fso-box-2">
+                        <div class="fso-info-1">
+                            <div class="fso-name">
+                                @if (fso.IsFolder)
+                                {
+                                <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
+                                }
+                                else
+                                {
+                                    <span class="file-name">@fso.Name</span>
+                                }
+                            </div>
+
+                            @if (!fso.IsFolder)
                             {
-                                <i class="fas fa-folder"></i>
-                                <span class="folder-name">@fso.Name</span>
-                            }
-                            else
-                            {
-                                <i class="fas fa-file"></i>
-                                <span class="file-name">@fso.Name</span>
+                                <b><span class="file-size">@fso.FileSize</span></b>
                             }
                         </div>
-
-                        @if (!fso.IsFolder)
-                        {
-                            <b><span class="file-size">@fso.FileSize</span></b>
-                        }
-                    </div>
-                    <div class="fso-info-2">
-                        <span>@fso.CreateDate</span>
+                        <div class="fso-info-2">
+                            <span>@fso.CreateDate</span>
+                        </div>
                     </div>
                 </div>
             }

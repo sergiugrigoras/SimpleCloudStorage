@@ -12,27 +12,63 @@
         <form method="post">
             @foreach (var fso in Model.SearchResults)
             {
-                if (fso.IsFolder)
-                {
-                    <div class="fso fso-folder">
-                        <div>
-                            <i class="fas fa-folder"></i>
-                            <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
+                <div data-id="@fso.Id" data-name="@fso.Name" data-date="@fso.CreateDate" data-size="@fso.FileSize" data-isfolder="@fso.IsFolder" id="fso-@fso.Id" class="fso">
+                    <div class="fso-box-1">
+                        @if (fso.IsFolder)
+                        {
+                            <div class="folder-icon-box"><i class="fas fa-folder"></i></div>
+                        }
+                        else
+                        {
+                            <div class="file-icon-box"><i class="fas fa-file"></i></div>
+                        }
+
+                    </div>
+                    <div class="fso-box-2">
+                        <div class="fso-info-1">
+                            <div class="fso-name">
+                                @if (fso.IsFolder)
+                                {
+                                    <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
+                                }
+                                else
+                                {
+                                    <a asp-page="Homepage" asp-route-id="@fso.ParentId"><span class="file-name">@fso.Name</span></a>
+                                }
+                            </div>
+
+                            @if (!fso.IsFolder)
+                            {
+                                <b><span class="file-size">@fso.FileSize</span></b>
+                            }
+                        </div>
+                        <div class="fso-info-2">
+                            <span>@fso.CreateDate</span>
                         </div>
                     </div>
-                }
-                else
-                {
-                    <div class="fso fso-file">
-                        <div>
-                            <i class="fas fa-file"></i>
-                            <span>@fso.Name&nbsp;&nbsp;</span>
-                            <span><b>Size:&nbsp;</b></span>
-                            <span class="file-size">@fso.FileSize</span>
-                        </div>
-                        <button type="submit" asp-page="Homepage" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                </div>
+
+                @*if (fso.IsFolder)
+            {
+                <div class="fso fso-folder">
+                    <div>
+                        <i class="fas fa-folder"></i>
+                        <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
                     </div>
-                }
+                </div>
+            }
+            else
+            {
+                <div class="fso fso-file">
+                    <div>
+                        <i class="fas fa-file"></i>
+                        <span>@fso.Name&nbsp;&nbsp;</span>
+                        <span><b>Size:&nbsp;</b></span>
+                        <span class="file-size">@fso.FileSize</span>
+                    </div>
+                    <button type="submit" asp-page="Homepage" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
+                </div>
+            }*@
             }
         </form>
         <a class="btn btn-primary" asp-page="Homepage" asp-route-id="@Model.CurrentDir.Id">Back to Folder</a>
