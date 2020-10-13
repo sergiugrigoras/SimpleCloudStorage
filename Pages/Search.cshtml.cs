@@ -24,6 +24,7 @@ namespace SimpleCloudStorage.Pages
         
         public List<FileSystemObject> SearchScope { get; set; }
         
+        [BindProperty]
         public FileSystemObject CurrentDir { get; set; }
 
         public SearchModel(AppDbContext context, UserManager<IdentityUser> userManager, IConfiguration configuration)
@@ -36,24 +37,25 @@ namespace SimpleCloudStorage.Pages
         }
         public void OnGet()
         {
-            
         }
 
         public async Task<IActionResult> OnPostAsync(string keyword, int dirId)
         {
-            /*SearchKeyword = keyword;
-            DirId = dirId;*/
-            CurrentDir = await _context.FileSystemObjects.FindAsync(dirId);
-
-            if (keyword != null)
+            CurrentDir = _context.FileSystemObjects.FirstOrDefault(d => d.Id == dirId);
+            if (CurrentDir != null)
             {
-                await searchDir(dirId);
-                filterResults(keyword);
+                ViewData["ReturnId"] = CurrentDir.Id;
+                if (keyword != null)
+                {
+                    await searchDir(dirId);
+                    filterResults(keyword);
+                }
+                return Page();
             }
-            
-            
-            return Page();
-
+            else
+            {
+                return RedirectToPage("./Index");
+            }
         }
 
         public async Task searchDir(int id)

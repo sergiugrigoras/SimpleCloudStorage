@@ -8,7 +8,7 @@
 
 
 <h1>@Model.CurrentUser.Name's HomePage&nbsp;<a asp-page="CreateHomePage"><i class="fas fa-edit"></i></a></h1>
-<div data-disksize="@Model.CurrentUserDiskSize" data-totalbytes="@Model.TotalBytes" id="user-data"></div>
+@*<div data-disksize="@Model.CurrentUserDiskSize" data-totalbytes="@Model.TotalBytes" id="user-data"></div>*@
 <div id="upload-file-alerts"></div>
 
 <div class="tool-bar">
@@ -26,8 +26,10 @@
                 <button class="btn" type="button" id="button-sort-size"><i class="fas fa-sort-amount-down-alt"></i></button>
                 <button class="btn" type="button" id="button-sort-date"><i class="fas fa-sort-numeric-down"></i></button>
                 <form method="post" id="download-form">
-                    <input type="hidden" name="fsoId" id="download-fso-id">
-                    <button type="submit" asp-page-handler="Download" class="btn"><i class="fas fa-download"></i></button>
+                    <input type="hidden" name="fsoIdcsv" id="download-fso-id-csv">
+                    <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
+                    <button type="button" class="btn" id="download-button"><i class="fas fa-download"></i></button>
+                    <input type="submit" asp-page-handler="Download" style="display:none" id="submit-download">
                 </form>
                 @if (Model.Roles.Contains("PremiumUser"))
                 {
@@ -43,8 +45,8 @@
                         <span id="disk-usage"></span>
                     </div>
                 </div>
-                <div class="start file-size">@Model.TotalBytes</div>
-                <div class="end file-size">@Model.CurrentUserDiskSize</div>
+                <div class="used-bytes"></div>
+                <div class="total-bytes"></div>
             </div>
         </div>
         <div class="col-md-3">
@@ -61,15 +63,17 @@
         <div class="col-md-12">
             <div class="path-bar">
                 @foreach (var fso in Model.fullPathList)
-                {
-                    <div class="path-bar-folder">
-                        <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
+                    {
+                    <div class="path-bar-elem">
+                        <div class="path-bar-folder">
+                            <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
+                        </div>
+                        <div class="path-bar-icon">
+                            <i class="fas fa-angle-right"></i>
+                        </div>
                     </div>
-                    <div class="path-bar-icon">
-                        <i class="fas fa-angle-right"></i>
-                    </div>
-                }
-            </div>
+                    }
+                </div>
         </div>
     </div>
 </div>
@@ -81,11 +85,14 @@
             {
                 <div data-id="@fso.Id" data-name="@fso.Name" data-date="@fso.CreateDate" data-size="@fso.FileSize" data-isfolder="@fso.IsFolder" id="fso-@fso.Id" class="fso">
                     <div class="fso-box-1">
-                        @if (fso.IsFolder) {
+                        @if (fso.IsFolder)
+                        {
                             <div class="folder-icon-box"><i class="fas fa-folder"></i></div>
                         }
-                        else { 
+                        else
+                        {
                             <div class="file-icon-box"><i class="fas fa-file"></i></div>
+                            <div class="file-ext-box" data-fsoid="@fso.Id">PDF</div>
                         }
 
                     </div>
@@ -94,7 +101,7 @@
                             <div class="fso-name">
                                 @if (fso.IsFolder)
                                 {
-                                <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
+                                    <a asp-page="Homepage" asp-route-id="@fso.Id"><span class="folder-name">@fso.Name</span></a>
                                 }
                                 else
                                 {
@@ -117,6 +124,11 @@
     </div>
 </div>
 
+@*<form method="post">
+    <input type="hidden" name="dirId" value="@Model.CurrentDir.Id"/>
+    <input type="text" name="fsoIdcsv"/>
+    <button type="submit" class="btn btn-primary" asp-page-handler="DownloadZip">Download Zip</button>
+</form>*@
 
 <!-- Modal Create Folder-->
 <div class="modal fade" id="create-folder-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
@@ -149,7 +161,7 @@
 <!--Delete Confirmation Modal Dialog-->
 <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-        <form method="post">
+        <form method="post" id="delete-fso-form">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalLabel">Confirm Delete</h5>
@@ -159,12 +171,11 @@
                 </div>
                 <div class="modal-body">
                     <h6 id="confirm-text"></h6>
-                    <input type="hidden" id="fso-id" name="fsoId" />
-                    <input type="hidden" id="return-id" name="returnId" value="@Model.CurrentDir.Id" />
+                    <input type="hidden" id="fso-id" name="fsoIdcsv" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger" asp-page-handler="Delete">Delete</button>
+                    <button type="button" class="btn btn-danger" id="delete-fso-button">Delete</button>
                 </div>
             </div>
         </form>

@@ -6,7 +6,6 @@
 }
 
 <h1>Search Results</h1>
-
 <div class="row">
     <div class="col-md-8">
         <form method="post">
@@ -47,31 +46,9 @@
                         </div>
                     </div>
                 </div>
-
-                @*if (fso.IsFolder)
-            {
-                <div class="fso fso-folder">
-                    <div>
-                        <i class="fas fa-folder"></i>
-                        <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="fso fso-file">
-                    <div>
-                        <i class="fas fa-file"></i>
-                        <span>@fso.Name&nbsp;&nbsp;</span>
-                        <span><b>Size:&nbsp;</b></span>
-                        <span class="file-size">@fso.FileSize</span>
-                    </div>
-                    <button type="submit" asp-page="Homepage" asp-route-id="@fso.Id" asp-page-handler="Download"><i class="fas fa-download"></i></button>
-                </div>
-            }*@
             }
         </form>
-        <a class="btn btn-primary" asp-page="Homepage" asp-route-id="@Model.CurrentDir.Id">Back to Folder</a>
+        <a class="btn btn-primary" asp-page="Homepage" asp-route-id="@ViewData["ReturnId"]">Back to Folder</a>
     </div>
 </div>
 

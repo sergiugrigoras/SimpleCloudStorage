@@ -84,11 +84,6 @@ body {
 .modal-content {
 margin-top: 5rem;
 }
-.path-bar {
-    display: flex;
-    flex-wrap: wrap;
-    border-top: 1px solid #ced4da;
-}
 
 .tool-bar {
     position: -webkit-sticky;
@@ -100,23 +95,38 @@ margin-top: 5rem;
     border-radius: 0.25rem;
     border: 1px solid #ced4da;
 }
+.path-bar {
+    display: flex;
+    flex-wrap: wrap;
+    border-top: 1px solid #ced4da;
+}
 
+.path-bar-elem {
+    display: flex;
+}
 .path-bar-folder {
-    border: 1px solid transparent;
+    /*border: 1px solid transparent;
     border-radius: 0.25rem;
     background-color: #fff3cd;
     border-color: #856404;
-    margin: 0.2rem 0rem;
+    margin: 0.2rem 0rem;*/
+    display: flex;
+    align-items: center;
 }
 
+.path-bar-folder:hover {
+    background-color: rgba(0, 123, 255, 0.25);
+}
     .path-bar-folder a {
         color: black;
         text-decoration: none;
-        margin: 0.2rem 1rem;
+        /*margin: 0.2rem 1rem;*/
     }
 
 .path-bar-icon {
-    margin: 0.2rem 0.3rem;
+    margin: 0 .5rem;
+    display: flex;
+    align-items: center;
 }
 
 .action-buttons {
@@ -168,11 +178,11 @@ flex-wrap:wrap;
     margin: 0.2rem 0rem;
 }
 
-.start {
+.used-bytes {
     float: left;
 }
 
-.end {
+.total-bytes {
     float: right;
     text-align: right;
 }
@@ -207,6 +217,9 @@ font-size: .7rem;
 .fso-box-1 {
     font-size: 2rem;
     margin: 0 .5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 .fso-box-2 {
     flex-grow: 1;
@@ -222,7 +235,20 @@ font-size: .7rem;
     color: #ffd242;
 }
 .file-icon-box {
+
     color: #7291ff;
+    z-index: 1;
+}
+
+.file-ext-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    font-size: .8rem;
+    color: white;
+    text-shadow: 2px 2px 2px #00000078;
 }
 
 .search-box:focus-within, .upload-file-box:focus-within {

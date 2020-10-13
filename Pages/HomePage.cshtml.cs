@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -99,23 +100,29 @@ namespace SimpleCloudStorage.Pages
                        orderby dir.IsFolder descending, dir.Name ascending
                        select dir;
 
-            // Resolve the user 
             var user = await _userManager.GetUserAsync(User);
-            // Get the roles for the user
             Roles = await _userManager.GetRolesAsync(user);
 
-
-            TotalBytes = await GetFsoSize(CurrentUser.HomeDirId);
-            if (Roles.Contains("NormalUser"))
-            {
-                CurrentUserDiskSize = _normalUserDiskSize;
-            }
-            else if (Roles.Contains("PremiumUser"))
-            {
-                CurrentUserDiskSize = _premiumUserDiskSize;
-
-            }
             return Page();
+        }
+
+        public async Task<JsonResult> OnGetUserData()
+        {
+            var aspUsr = await _userManager.GetUserAsync(User);
+            var rolesList = await _userManager.GetRolesAsync(aspUsr);
+            var user = await _context.Users.FirstOrDefaultAsync(p => p.UserAccountId == aspUsr.Id);
+            var usedBytes = await GetFsoSize(user.HomeDirId);
+            long diskSize = 0;
+            if (rolesList.Contains("NormalUser"))
+            {
+                diskSize = _normalUserDiskSize;
+            }
+            else if (rolesList.Contains("PremiumUser"))
+            {
+                diskSize = _premiumUserDiskSize;
+            }
+
+            return new JsonResult(new UserInfo() { Name = user.Name, TotalBytes = diskSize, UsedBytes = usedBytes, Roles = rolesList.ToList()});
         }
 
         public async Task<IActionResult> OnPostCreateFolderAsync(int returnId, string fsoName)
@@ -183,26 +190,86 @@ namespace SimpleCloudStorage.Pages
             }
             return RedirectToPage("./HomePage", new { id = returnId });
         }
-        public async Task<ActionResult> OnPostDownloadAsync(int fsoId)
+        public async Task<ActionResult> OnPostDownloadAsync(string fsoIdcsv, int dirId)
         {
-            string filePath = _storageLocation + _userManager.GetUserId(User) + "/";
-            var fso = _context.FileSystemObjects.FirstOrDefault(f => f.Id == fsoId);
-            var hashFileName = fso.FileName;
-            var downloadFileName = fso.Name;
-
-            var memory = new MemoryStream();
-            using (var stream = new FileStream(filePath + hashFileName, FileMode.Open))
+            if (fsoIdcsv == null || fsoIdcsv == "") { return Page(); }
+            string[] fsoIdArr = fsoIdcsv.Split(',');
+            List<FileSystemObject> fsoList = new List<FileSystemObject>();
+            foreach (var fsoId in fsoIdArr)
             {
-                await stream.CopyToAsync(memory);
+                var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == int.Parse(fsoId));
+                fsoList.Add(fso);
             }
-            memory.Position = 0;
-            return File(memory, "application/octet-stream", downloadFileName);
+
+            var ms = new MemoryStream();
+
+            if (fsoList.Count == 1 && !fsoList[0].IsFolder)
+            {
+                string fullFilePath = _storageLocation + _userManager.GetUserId(User) + "/" + fsoList[0].FileName;
+                using (var stream = new FileStream(fullFilePath, FileMode.Open))
+                {
+                    await stream.CopyToAsync(ms);
+                }
+                ms.Seek(0, SeekOrigin.Begin);
+                return File(ms, "application/octet-stream", fsoList[0].Name);
+            }
+            else
+            {
+                ZipArchive archive = new ZipArchive(ms, ZipArchiveMode.Create, true);
+                foreach (var fso in fsoList)
+                {
+                    await AddFsoToArchiveAsync(archive, fso, dirId);
+                }
+
+                archive.Dispose();
+                ms.Seek(0, SeekOrigin.Begin);
+                return File(ms, "application/zip", "files.zip");
+            }
+        }
+        private async Task AddFsoToArchiveAsync(ZipArchive archive, FileSystemObject fso, int rootDirId)
+        {
+            string fsoPath = String.Empty;
+            var parseObj = await _context.FileSystemObjects.FindAsync(fso.ParentId);
+            while (parseObj.Id != rootDirId)
+            {
+                fsoPath = fsoPath.Insert(0, parseObj.Name + "/");
+                parseObj.Parent = await _context.FileSystemObjects.FindAsync(parseObj.ParentId);
+                parseObj = parseObj.Parent;
+            }
+
+            if (!fso.IsFolder)
+            {
+                string fullFilePath = _storageLocation + _userManager.GetUserId(User) + "/" + fso.FileName;
+                archive.CreateEntryFromFile(fullFilePath, fsoPath+fso.Name, CompressionLevel.Optimal);
+            }
+            else
+            {
+                archive.CreateEntry(fsoPath + fso.Name+"/");
+                foreach (var c in await GetFsoContentAsync(fso))
+                {
+                    await AddFsoToArchiveAsync(archive, c, rootDirId);
+                }
+            }
         }
 
-        public async Task<ActionResult> OnPostDeleteAsync(int fsoId, int returnId)
+        private async Task<List<FileSystemObject>> GetFsoContentAsync(FileSystemObject fso)
         {
-            await DeleteFsoAsync(fsoId);
-            return RedirectToPage("./HomePage", new { id = returnId });
+            List<FileSystemObject> FsoList = await _context.FileSystemObjects.ToListAsync();
+
+            var folderContent = from f in FsoList
+                                where f.ParentId == fso.Id
+                                select f;
+            return folderContent.ToList();
+        }
+
+        public async Task OnPostDeleteAsync(string fsoIdcsv)
+        {
+            if (fsoIdcsv == null || fsoIdcsv == "") { Page(); }
+            string[] fsoIdArr = fsoIdcsv.Split(',');
+            foreach (var fsoId in fsoIdArr)
+            {
+                await DeleteFsoAsync(int.Parse(fsoId));
+            }
         }
 
         private async Task DeleteFsoAsync(int id)
@@ -291,30 +358,14 @@ namespace SimpleCloudStorage.Pages
             return bytesCount;
         }
 
-        /*        public string GenHashFileName(string input)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    MemoryStream stream;
+        private class UserInfo
+        {
+            public string Name { get; set; }
+            public long TotalBytes { get; set; }
+            public long UsedBytes { get; set; }
+            public List<string> Roles { get; set; }
+        }
 
-                    using (SHA256 mySHA256 = SHA256.Create())
-                    {
-                        byte[] byteArray = Encoding.UTF8.GetBytes(input + DateTime.Now.ToString());
-                        stream = new MemoryStream(byteArray);
-                        byte[] hashValue = mySHA256.ComputeHash(stream);
-                        for (int i = 0; i < hashValue.Length; i++) sb.Append($"{hashValue[i]:x2}");
-                    }
-                    return sb.ToString();
-                }*/
-
-        /*        public string bytesToString(long byteCount)
-                {
-                    string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-                    if (byteCount == 0)
-                        return "0" + suf[0];
-                    long bytes = Math.Abs(byteCount);
-                    int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-                    double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-                    return (Math.Sign(byteCount) * num).ToString() + suf[place];
-                }*/
+       
     }
 }

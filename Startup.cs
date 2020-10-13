@@ -40,6 +40,8 @@ namespace SimpleCloudStorage
 
             services.AddRazorPages().AddRazorRuntimeCompilation();
 
+            /*services.AddAntiforgery(o => o.HeaderName = "XSRF-TOKEN");*/
+
             services.Configure<FormOptions>(x =>
             {
                 x.ValueLengthLimit = 5000; // Limit on individual form values

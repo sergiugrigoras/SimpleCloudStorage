@@ -4,7 +4,8 @@
 // Write your Javascript code.
 
 //Variables
-
+var usedBytes = 0; //Sum of all files
+var totalBytes = 0;//disk size
 
 //Functions
 function showalert(message, alerttype, parentElem) {
@@ -87,20 +88,41 @@ $('.mynote').each(function () {
 });
 //
 
-//Delete Confirm Modal
+//Delete FSO Confirm Modal
 $('#confirm-delete').on('show.bs.modal', function (event) {
-    var button = $(event.relatedTarget);
-    var fsoname = $('.fso-selected').data('name');
-    var fsoid = $('.fso-selected').data('id');
-    var fsotype;
-    if ($('.fso-selected').data('isfolder') == 'True') {
-        fsotype = 'Folder';
-    } else {
-        fsotype = 'File';
-    }
-    var modal = $(this)
-    modal.find('#confirm-text').text('Are you sure want to delete ' + fsotype + ' ' + fsoname)
-    modal.find('#fso-id').val(fsoid)
+    var fsoCsvList = [];
+    $('.fso-selected').each(function () {
+        fsoCsvList.push($(this).data('id').toString());
+    });
+    console.log(fsoCsvList);
+    var form = $('#delete-fso-form');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    var modal = $(this);
+    modal.find('#confirm-text').text('Are you sure want to delete ' + fsoCsvList.length + ' file(s)');
+    modal.find('#delete-fso-button').on('click', function () {
+        $.ajax({
+            url: '?handler=Delete',
+            type: 'POST',
+            data: {
+                __RequestVerificationToken: token,
+                fsoIdcsv: fsoCsvList.toString()
+            },
+            success: function () {
+                modal.modal('hide');
+                showalert('Successfully deleted ' + fsoCsvList.length + ' file(s)' , 'alert-success', $('#upload-file-alerts'));
+                $('.fso-selected').hide();
+                updateDisk();
+            },
+            failure: function () {
+                showalert('Unable to delete', 'alert-warning', $('#upload-file-alerts'));
+            }
+        });
+        return false;
+    });
+});
+
+$('#confirm-delete').on('hidden.bs.modal', function () {
+    $('#delete-fso-button').off();
 });
 
 //Delete Note Confirm Modal
@@ -171,7 +193,7 @@ if (uploadField != null) {
             showalert('File <b>' + this.files[0].name + '</b> already exists', 'alert-danger', $('#upload-file-alerts'))
             this.value = "";
         }
-        else if ((this.files[0].size + totalBytes) > diskSize) {
+        else if ((this.files[0].size + usedBytes) > totalBytes) {
             showalert('Not enough space, disk full', 'alert-danger', $('#upload-file-alerts'))
         } else {
             $('#submit-upload').trigger('click');
@@ -181,36 +203,41 @@ if (uploadField != null) {
 
 //
 
-
-
-/*
-$('.fso-buttons').hide();
-$('.action-trigger').on('click', function () {
-    let id = $(this).data('id');
-    $('#fso-buttons-' + id).toggle();
-})
-
-$('.fso-folder').dblclick(function () {
-    window.location.replace(window.location.origin + '/HomePage/' + $(this).data('id'));
-});*/
-
-
-
 //Disk
-var diskSize = $('#user-data').data('disksize');
-var totalBytes = $('#user-data').data('totalbytes');
-var used = Math.round((totalBytes * 100) / diskSize);
 
-if (used < 75) {
-    $('#disk').addClass('bg-success');
-} else if (used < 90) {
-    $('#disk').addClass('bg-warning');
-} else {
-    $('#disk').addClass('bg-danger');
+function updateDisk() {
+    $.ajax({
+        type: "GET",
+        url: "?handler=UserData",
+        contentType: "application/json",
+        dataType: "json",
+        success: function (response) {
+            usedBytes = response.usedBytes;
+            totalBytes = response.totalBytes;
+            var diskUsed = Math.round((usedBytes * 100) / totalBytes);
+            $('#disk').attr('aria-valuenow', diskUsed).css('width', diskUsed + '%');
+            $('#disk-usage').html(diskUsed + '%');
+            $('.used-bytes').html(readableBytes(usedBytes));
+            $('.total-bytes').html(readableBytes(totalBytes));
+
+            if (diskUsed < 75) {
+                $('#disk').removeClass('bg-warning bg-danger');
+                $('#disk').addClass('bg-success');
+            } else if (diskUsed < 90) {
+                $('#disk').removeClass('bg-success bg-danger');
+                $('#disk').addClass('bg-warning');
+            } else {
+                $('#disk').removeClass('bg-success bg-warning');
+                $('#disk').addClass('bg-danger');
+            }
+        },
+        failure: function (response) {
+            alert(response);
+        }
+    });
 }
 
-$('#disk').attr('aria-valuenow', used).css('width', used + '%');
-$('#disk-usage').html(used + '%');
+updateDisk();
 
 
 //Display Readble Bytes
@@ -218,7 +245,15 @@ document.querySelectorAll(".file-size").forEach(function (fs) {
     fs.innerHTML = readableBytes(fs.innerHTML);
 });
 
-
+//Download Fso
+$('#download-button').on('click', function () {
+    var fsoCsvList = [];
+    $('.fso-selected').each(function () {
+        fsoCsvList.push($(this).data('id').toString());
+    });
+    $('#download-fso-id-csv').val(fsoCsvList.toString());
+    $('#submit-download').trigger('click');
+});
 
 
 //Select FSO
@@ -245,21 +280,33 @@ $(document).on('keydown', function (event) {
 }); 
 
 $('.fso').on('click', function (e) {
-    deselectFso();    
-    $(this).addClass("fso-selected");
-    if ($(this).data('isfolder')=='False') {
+    if (e.ctrlKey) {
+        $(this).toggleClass("fso-selected");
+    } else {
+        deselectFso();
+        $(this).addClass("fso-selected");
+    }
+    let selectedFiles = 0;
+    let selectedFolders = 0;
+    $('.fso-selected').each(function () {
+        if ($(this).data('isfolder') == 'True') selectedFolders++;
+        else selectedFiles++;
+    });
+
+    if (selectedFolders == 0 && selectedFiles == 0) {
+        hideFsoControls();
+    } else if (selectedFolders >= 1 || selectedFiles > 1) {
+        $('#download-form').show();
+        $('#share-button').hide();
+        $('#delete-button').show();
+    } else if (selectedFolders == 0 && selectedFiles == 1) {
         $('#download-form').show();
         $('#share-button').show();
         $('#delete-button').show();
-        $('#download-fso-id').val($(this).data('id'));
     }
-    else {
-        $('#download-form').hide();
-        $('#share-button').hide();
-        $('#delete-button').show();
-    }
-    
 });
+
+
 
 $('.fso').on('dblclick', function () {
     if ($(this).data('isfolder') == 'True') {
@@ -361,6 +408,26 @@ $('#button-sort-date').on('click', function () {
     $('#explorer').append(fileArray);
 
 });
+
+
+//File Ext
+$('.file-ext-box').each(function () {
+    let id = $(this).data('fsoid');
+    let fname = $('#fso-' + id).data('name').toString();
+    let ext = fname.split('.').pop().toUpperCase();
+    if (ext.length <= 3) {
+        $(this).css('font-size', '.8rem');
+    } else if (ext.length <= 5) {
+        $(this).css('font-size', '.6rem');
+    } else {
+        ext = '...'
+    }
+    $(this).html(ext);
+});
+
+//
+
+
 
 
 
