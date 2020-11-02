@@ -252,6 +252,17 @@ namespace SimpleCloudStorage.Pages
             }
         }
 
+        public async Task OnPostRenameAsync(int id, string newName)
+        {
+            if (newName != "" && newName != null)
+            {
+                var fso = await _context.FileSystemObjects.FirstOrDefaultAsync(f => f.Id == id);
+                fso.Name = newName;
+                _context.Update(fso);
+                await _context.SaveChangesAsync();
+            }  
+        }
+
         private async Task<List<FileSystemObject>> GetFsoContentAsync(FileSystemObject fso)
         {
             List<FileSystemObject> FsoList = await _context.FileSystemObjects.ToListAsync();

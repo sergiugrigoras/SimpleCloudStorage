@@ -5,40 +5,39 @@
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
-
-
 <h1>@Model.CurrentUser.Name's HomePage&nbsp;<a asp-page="CreateHomePage"><i class="fas fa-edit"></i></a></h1>
 @*<div data-disksize="@Model.CurrentUserDiskSize" data-totalbytes="@Model.TotalBytes" id="user-data"></div>*@
 <div id="upload-file-alerts"></div>
 
 <div class="tool-bar">
     <div class="row">
-        <div class="col-md-5">
+        <div class="col-md-6">
             <div class="action-buttons">
-                <button type="button" class="btn" data-toggle="modal" data-target="#create-folder-modal"><i class="fas fa-folder-plus"></i></button>
+                <button type="button" class="btn" data-toggle="modal" data-target="#create-folder-modal"><i class="fas fa-folder-plus" id="new-folder-icon"></i></button>
                 <form enctype="multipart/form-data" method="post" id="upload-file-form">
                     <input type="hidden" name="returnId" value="@Model.CurrentDir.Id" />
                     <input id="input-upload-file" type="file" name="file" style="display:none" />
-                    <button id="upload-button" type="button" class="btn"><i class="fas fa-file-upload"></i></button>
+                    <button id="upload-button" type="button" class="btn"><i class="fas fa-file-upload" id="upload-file-icon"></i></button>
                     <input type="submit" asp-page-handler="Upload" id="submit-upload" style="display:none">
                 </form>
-                <button class="btn" type="button" id="button-sort-name"><i class="fas fa-sort-alpha-down-alt"></i></button>
-                <button class="btn" type="button" id="button-sort-size"><i class="fas fa-sort-amount-down-alt"></i></button>
-                <button class="btn" type="button" id="button-sort-date"><i class="fas fa-sort-numeric-down"></i></button>
+                <button class="btn" type="button" id="button-sort-name"><i class="fas fa-sort-alpha-down-alt" id="sort-name-icon"></i></button>
+                <button class="btn" type="button" id="button-sort-size"><i class="fas fa-sort-amount-down-alt" id="sort-size-icon"></i></button>
+                <button class="btn" type="button" id="button-sort-date"><i class="fas fa-sort-numeric-down" id="sort-date-icon"></i></button>
                 <form method="post" id="download-form">
                     <input type="hidden" name="fsoIdcsv" id="download-fso-id-csv">
                     <input type="hidden" name="dirId" value="@Model.CurrentDir.Id">
-                    <button type="button" class="btn" id="download-button"><i class="fas fa-download"></i></button>
+                    <button type="button" class="btn" id="download-button"><i class="fas fa-download" id="download-icon"></i></button>
                     <input type="submit" asp-page-handler="Download" style="display:none" id="submit-download">
                 </form>
                 @if (Model.Roles.Contains("PremiumUser"))
                 {
-                    <button type="button" data-toggle="modal" data-target="#confirm-share" class="btn" id="share-button"><i class="fas fa-share-alt"></i></button>
+                    <button type="button" data-toggle="modal" data-target="#confirm-share" class="btn" id="share-button"><i class="fas fa-share-alt" id="share-icon"></i></button>
                 }
-                <button type="button" data-toggle="modal" data-target="#confirm-delete" class="btn" id="delete-button"><i class="fas fa-trash-alt"></i></button>
+                <button type="button" data-toggle="modal" data-target="#confirm-delete" class="btn" id="delete-button"><i class="fas fa-trash-alt" id="delete-icon"></i></button>
+                <button type="button" data-toggle="modal" data-target="#rename-fso-modal" class="btn" id="rename-button"><i class="fas fa-i-cursor" id="rename-icon"></i></button>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="disk-box">
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%" id="disk">
@@ -63,7 +62,7 @@
         <div class="col-md-12">
             <div class="path-bar">
                 @foreach (var fso in Model.fullPathList)
-                    {
+                {
                     <div class="path-bar-elem">
                         <div class="path-bar-folder">
                             <a asp-page="Homepage" asp-route-id="@fso.Id">@fso.Name</a>
@@ -72,8 +71,8 @@
                             <i class="fas fa-angle-right"></i>
                         </div>
                     </div>
-                    }
-                </div>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -92,7 +91,7 @@
                         else
                         {
                             <div class="file-icon-box"><i class="fas fa-file"></i></div>
-                            <div class="file-ext-box" data-fsoid="@fso.Id">PDF</div>
+                            <div class="file-ext-box" data-fsoid="@fso.Id"></div>
                         }
 
                     </div>
@@ -123,12 +122,11 @@
         </div>
     </div>
 </div>
-
 @*<form method="post">
-    <input type="hidden" name="dirId" value="@Model.CurrentDir.Id"/>
-    <input type="text" name="fsoIdcsv"/>
-    <button type="submit" class="btn btn-primary" asp-page-handler="DownloadZip">Download Zip</button>
-</form>*@
+        <input type="text" name="id"/>
+        <input type="text" name="newName"/>
+        <button type="submit" class="btn btn-primary" asp-page-handler="Rename">Rename</button>
+    </form>*@
 
 <!-- Modal Create Folder-->
 <div class="modal fade" id="create-folder-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
@@ -152,7 +150,6 @@
                     <button type="submit" class="btn btn-danger" asp-page-handler="CreateFolder">Create</button>
                 </div>
             </div>
-
         </form>
     </div>
 </div>
@@ -210,6 +207,29 @@
     </div>
 </div>
 
-
-
-
+<!--Rename Modal Dialog-->
+<div class="modal fade" id="rename-fso-modal" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div id="rename-alerts">
+    </div>
+    <div class="modal-dialog" role="document">
+        <form method="post" id="rename-fso-form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Rename</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cancel">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <h6 id="confirm-text"></h6>
+                    <input type="hidden" id="fso-id" name="id" />
+                    <input type="text" id="new-fso-name" name="newName" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="rename-fso-button">Rename</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

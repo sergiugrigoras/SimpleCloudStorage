@@ -5,6 +5,10 @@
     {
       "library": "font-awesome@5.14.0",
       "destination": "wwwroot/lib/font-awesome/"
+    },
+    {
+      "library": "popper.js@2.5.4",
+      "destination": "wwwroot/lib/popper.js/"
     }
   ]
 }

@@ -3,6 +3,48 @@
 
 // Write your Javascript code.
 
+//Tooltips
+$(document).ready(function () {
+    $('#new-folder-icon').tooltip({
+        title: 'New folder',
+        placement: 'top',
+    });
+    $('#upload-file-icon').tooltip({
+        title: 'Upload file',
+        placement: 'top',
+    });
+    $('#sort-name-icon').tooltip({
+        title: 'Sort by name',
+        placement: 'top',
+    });
+    $('#sort-size-icon').tooltip({
+        title: 'Sort by size',
+        placement: 'top',
+    });
+    $('#sort-date-icon').tooltip({
+        title: 'Sort by date',
+        placement: 'top',
+    });
+    $('#download-icon').tooltip({
+        title: 'Download',
+        placement: 'top',
+    });
+    $('#share-icon').tooltip({
+        title: 'Share',
+        placement: 'top',
+    });
+    $('#delete-icon').tooltip({
+        title: 'Delete',
+        placement: 'top',
+    });
+    $('#rename-icon').tooltip({
+        title: 'Rename',
+        placement: 'top',
+    });
+});
+
+
+
 //Variables
 var usedBytes = 0; //Sum of all files
 var totalBytes = 0;//disk size
@@ -47,6 +89,12 @@ function copyToClipboardCurrentUrl() {
     document.execCommand("copy");
     $temp.remove();
 }
+
+/*$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+})*/
+
+
 
 //Notes
 $('#new-note-form').hide();
@@ -94,7 +142,7 @@ $('#confirm-delete').on('show.bs.modal', function (event) {
     $('.fso-selected').each(function () {
         fsoCsvList.push($(this).data('id').toString());
     });
-    console.log(fsoCsvList);
+    //console.log(fsoCsvList);
     var form = $('#delete-fso-form');
     var token = $('input[name="__RequestVerificationToken"]', form).val();
     var modal = $(this);
@@ -110,7 +158,7 @@ $('#confirm-delete').on('show.bs.modal', function (event) {
             success: function () {
                 modal.modal('hide');
                 showalert('Successfully deleted ' + fsoCsvList.length + ' file(s)' , 'alert-success', $('#upload-file-alerts'));
-                $('.fso-selected').hide();
+                $('.fso-selected').remove();
                 updateDisk();
             },
             failure: function () {
@@ -152,11 +200,16 @@ $('#create-folder-modal').on('show.bs.modal', function () {
     folderList.forEach(function (fl) {
         folderListArray.push(fl.innerHTML);
     });
-    var folderNameInput = document.getElementById("input-create-folder");
+
+    var modal = $(this);
+    var folderNameInput = modal.find("#input-create-folder");
+    setTimeout(() => {
+        folderNameInput.val('New Folder');
+        folderNameInput.select();
+    }, 500)
     $("#new-folder-form").submit(function (event) {
-        if (folderListArray.indexOf(folderNameInput.value) >= 0) {
-            showalert('Folder <b>' + folderNameInput.value + '</b> already exists', 'alert-danger', $('#new-folder-alerts'));
-            console.log('exists');
+        if (folderListArray.indexOf(folderNameInput.val()) >= 0) {
+            showalert('Folder <b>' + folderNameInput.val() + '</b> already exists', 'alert-danger', $('#new-folder-alerts'));
             event.preventDefault();
         }
         return;
@@ -167,39 +220,114 @@ $('#create-folder-modal').on('hidden.bs.modal', function () {
     $("#new-folder-form").off(); //remove all events handler
 });
 
+//Rename FSO Modal
+$('#rename-fso-modal').on('show.bs.modal', function () {
+    var fsoid = $('.fso-selected').data('id');
+    var fsoName = $('.fso-selected').data('name');
+    $('#new-fso-name').val(fsoName);
+    var fsoType;
+    if ($('.fso-selected').data('isfolder') == 'True') {
+        fsoType = 'Folder';
+    }
+    else {
+        fsoType = 'File';
+    } 
+    var form = $('#rename-fso-form');
+    var token = $('input[name="__RequestVerificationToken"]', form).val();
+    var modal = $(this);
+    modal.find('#confirm-text').text('Rename ' + fsoType + ' ' + fsoName);
+    setTimeout(() => modal.find('#new-fso-name').focus(), 500);
+   
+    modal.find('#rename-fso-button').on('click', function () {
+        var fsoNewName = $('#new-fso-name').val();
+        if (fsoName != fsoNewName && fsoNewName != '') {
+            if (fsoType == 'Folder') {
+                var folderListArray = [];
+                $('.fso').each(function () {
+                    if ($(this).data('isfolder') == 'True') {
+                        folderListArray.push($(this).data('name').toString());
+                    }
+                });
+                if (folderListArray.indexOf(fsoNewName) >= 0) {
+                    showalert('Folder with name <strong>' + fsoNewName + '</strong> already exists', 'alert-danger', $('#rename-alerts'));
+                }
+            } else {
+                var fileListArray = [];
+                $('.fso').each(function () {
+                    if ($(this).data('isfolder') == 'False') {
+                        fileListArray.push($(this).data('name').toString());
+                    }
+                });
+                if (fileListArray.indexOf(fsoNewName) >= 0) {
+                    showalert('File with name <strong>' + fsoNewName + '</strong> already exists', 'alert-danger', $('#rename-alerts'));
+                }
+            }
+            $.ajax({
+                url: '?handler=Rename',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: token,
+                    id: fsoid,
+                    newName: fsoNewName
+                },
+                success: function () {
+                    modal.modal('hide');
+                    showalert('Successfully Renamed ' + fsoType + ' <strong>' + fsoName + '</strong> to <strong>' + $('#new-fso-name').val() +'</strong>', 'alert-success', $('#upload-file-alerts'));
+                    $('.fso-selected').find('.file-name').text(fsoNewName);
+                    $('.fso-selected').find('.folder-name').text(fsoNewName);
+                    $('.fso-selected').data('name', fsoNewName);
+                    updateIcons();
+                },
+                failure: function () {
+                    showalert('Unable to rename selected ' + fsoType, 'alert-warning', $('#upload-file-alerts'));
+                    modal.modal('hide');
+                }
+            });
+        }
+        else {
+            modal.modal('hide');
+        }
+        return false;
+    });
+});
+
+$('#rename-fso-modal').on('hidden.bs.modal', function () {
+    $('#rename-fso-button').off();
+});
 
 
 //Upload File
 $('#upload-button').on('click', function () {
     $('#input-upload-file').trigger('click');
+    var fileList = document.querySelectorAll(".file-name");
+    var fileListArray = [];
+    fileList.forEach(function (fl) {
+        fileListArray.push(fl.innerHTML);
+    });
+
+    var maxFileSize = 52428800;
+    var uploadField = document.getElementById("input-upload-file");
+    if (uploadField != null) {
+        uploadField.onchange = function () {
+            if (this.files[0].size > maxFileSize) {
+                showalert('File is too big <b>' + readableBytes(maxFileSize) + ' </b>Max', 'alert-danger', $('#upload-file-alerts'))
+                this.value = "";
+            }
+            else if (fileListArray.indexOf(this.files[0].name) >= 0) {
+                /*fileListArray.push(this.files[0].name);*/
+                showalert('File <b>' + this.files[0].name + '</b> already exists', 'alert-danger', $('#upload-file-alerts'))
+                this.value = "";
+            }
+            else if ((this.files[0].size + usedBytes) > totalBytes) {
+                showalert('Not enough space, disk full', 'alert-danger', $('#upload-file-alerts'))
+            } else {
+                $('#submit-upload').trigger('click');
+            }
+        };
+    }
 })
 
-var fileList = document.querySelectorAll(".file-name");
-var fileListArray = [];
-fileList.forEach(function (fl) {
-    fileListArray.push(fl.innerHTML);
-});
 
-var maxFileSize = 52428800;
-var uploadField = document.getElementById("input-upload-file");
-if (uploadField != null) {
-    uploadField.onchange = function () {
-        if (this.files[0].size > maxFileSize) {
-            showalert('File is too big <b>' + readableBytes(maxFileSize) + ' </b>Max', 'alert-danger', $('#upload-file-alerts'))
-            this.value = "";
-        }
-        else if (fileListArray.indexOf(this.files[0].name) >= 0) {
-            /*fileListArray.push(this.files[0].name);*/
-            showalert('File <b>' + this.files[0].name + '</b> already exists', 'alert-danger', $('#upload-file-alerts'))
-            this.value = "";
-        }
-        else if ((this.files[0].size + usedBytes) > totalBytes) {
-            showalert('Not enough space, disk full', 'alert-danger', $('#upload-file-alerts'))
-        } else {
-            $('#submit-upload').trigger('click');
-        }
-    };
-}
 
 //
 
@@ -257,10 +385,11 @@ $('#download-button').on('click', function () {
 
 
 //Select FSO
-function hideFsoControls() {
-    $('#download-form').hide();
-    $('#share-button').hide();
-    $('#delete-button').hide();
+function disableFsoControls() {
+    $('#download-button').prop("disabled", true);
+    $('#share-button').prop("disabled", true);
+    $('#delete-button').prop("disabled", true);
+    $('#rename-button').prop("disabled", true);
 }
 
 function deselectFso() {
@@ -270,12 +399,12 @@ function deselectFso() {
 }
 
 deselectFso();
-hideFsoControls();
+disableFsoControls();
 
 $(document).on('keydown', function (event) {
     if (event.key == "Escape") {
         deselectFso();
-        hideFsoControls();
+        disableFsoControls();
     }
 }); 
 
@@ -294,15 +423,24 @@ $('.fso').on('click', function (e) {
     });
 
     if (selectedFolders == 0 && selectedFiles == 0) {
-        hideFsoControls();
-    } else if (selectedFolders >= 1 || selectedFiles > 1) {
-        $('#download-form').show();
-        $('#share-button').hide();
-        $('#delete-button').show();
+        disableFsoControls();
+    }
+    else if (selectedFolders == 1 && selectedFiles == 0) {
+        $('#download-button').prop("disabled", false);
+        $('#share-button').prop("disabled", true);
+        $('#delete-button').prop("disabled", false);
+        $('#rename-button').prop("disabled", false);
+    }
+    else if (selectedFolders >= 1 || selectedFiles > 1) {
+        $('#download-button').prop("disabled", false);
+        $('#share-button').prop("disabled", true);
+        $('#delete-button').prop("disabled", false);
+        $('#rename-button').prop("disabled", true);
     } else if (selectedFolders == 0 && selectedFiles == 1) {
-        $('#download-form').show();
-        $('#share-button').show();
-        $('#delete-button').show();
+        $('#download-button').prop("disabled", false);
+        $('#share-button').prop("disabled", false);
+        $('#delete-button').prop("disabled", false);
+        $('#rename-button').prop("disabled", false);
     }
 });
 
@@ -331,7 +469,8 @@ fsoList.forEach(function (fso) {
 })
 
 $('#button-sort-name').on('click', function () {
-    if ($(this).html() == '<i class="fas fa-sort-alpha-down"></i>') {
+    var icon = $(this).find('i');
+    if (icon.attr('class') == "fas fa-sort-alpha-down") {
         folderArray.sort(function (a, b) {
             if ($(a).data('name').toString().toLowerCase() < $(b).data('name').toString().toLowerCase())
                 return -1;
@@ -342,7 +481,8 @@ $('#button-sort-name').on('click', function () {
                 return -1;
             else return 1;
         });
-        $(this).html('<i class="fas fa-sort-alpha-down-alt"></i>');
+        icon.removeClass().addClass("fas fa-sort-alpha-down-alt");
+        /*$(this).html('<i class="fas fa-sort-alpha-down-alt"></i>');*/
     } else {
         folderArray.sort(function (a, b) {
             if ($(a).data('name').toString().toLowerCase() > $(b).data('name').toString().toLowerCase())
@@ -354,7 +494,8 @@ $('#button-sort-name').on('click', function () {
                 return -1;
             else return 1;
         });
-        $(this).html('<i class="fas fa-sort-alpha-down"></i>');
+        icon.removeClass().addClass("fas fa-sort-alpha-down");
+        /*$(this).html('<i class="fas fa-sort-alpha-down"></i>');*/
     }
     $('#explorer').append(folderArray);
     $('#explorer').append(fileArray);
@@ -362,16 +503,17 @@ $('#button-sort-name').on('click', function () {
 
 
 $('#button-sort-size').on('click', function () {
-    if ($(this).html() == '<i class="fas fa-sort-amount-down-alt"></i>') {
+    var icon = $(this).find('i');
+    if (icon.attr('class') == "fas fa-sort-amount-down-alt") {
         fileArray.sort(function (a, b) {
             return $(a).data('size') - $(b).data('size');
         });
-        $(this).html('<i class="fas fa-sort-amount-down"></i>');
+        icon.removeClass().addClass("fas fa-sort-amount-down");
     } else {
         fileArray.sort(function (a, b) {
             return $(b).data('size') - $(a).data('size');
         });
-        $(this).html('<i class="fas fa-sort-amount-down-alt"></i>');
+        icon.removeClass().addClass("fas fa-sort-amount-down-alt");
     }
     $('#explorer').append(folderArray);
     $('#explorer').append(fileArray);
@@ -379,7 +521,8 @@ $('#button-sort-size').on('click', function () {
 
 
 $('#button-sort-date').on('click', function () {
-    if ($(this).html() == '<i class="fas fa-sort-numeric-down"></i>') {
+    var icon = $(this).find('i');
+    if (icon.attr('class') == "fas fa-sort-numeric-down") {
         folderArray.sort(function (a, b) {
             if ($(a).data('date') < $(b).data('date'))
                 return -1;
@@ -390,7 +533,7 @@ $('#button-sort-date').on('click', function () {
                 return -1;
             else return 1;
         });
-        $(this).html('<i class="fas fa-sort-numeric-down-alt"></i>');
+        icon.removeClass().addClass("fas fa-sort-numeric-down-alt");
     } else {
         folderArray.sort(function (a, b) {
             if ($(a).data('date') > $(b).data('date'))
@@ -402,7 +545,7 @@ $('#button-sort-date').on('click', function () {
                 return -1;
             else return 1;
         });
-        $(this).html('<i class="fas fa-sort-numeric-down"></i>');
+        icon.removeClass().addClass("fas fa-sort-numeric-down");
     }
     $('#explorer').append(folderArray);
     $('#explorer').append(fileArray);
@@ -411,19 +554,22 @@ $('#button-sort-date').on('click', function () {
 
 
 //File Ext
-$('.file-ext-box').each(function () {
-    let id = $(this).data('fsoid');
-    let fname = $('#fso-' + id).data('name').toString();
-    let ext = fname.split('.').pop().toUpperCase();
-    if (ext.length <= 3) {
-        $(this).css('font-size', '.8rem');
-    } else if (ext.length <= 5) {
-        $(this).css('font-size', '.6rem');
-    } else {
-        ext = '...'
-    }
-    $(this).html(ext);
-});
+function updateIcons(){
+    $('.file-ext-box').each(function () {
+        let id = $(this).data('fsoid');
+        let fname = $('#fso-' + id).data('name').toString();
+        let ext = fname.split('.').pop().toUpperCase();
+        if (ext.length <= 3) {
+            $(this).css('font-size', '.8rem');
+        } else if (ext.length <= 5) {
+            $(this).css('font-size', '.6rem');
+        } else {
+            ext = '...'
+        }
+        $(this).html(ext);
+    });
+}
+updateIcons();
 
 //
 
